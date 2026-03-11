@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Spark — Стилист</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#f5f0e8;--warm:#faf8f4;--sage:#8a9e8b;--sage-l:#c5d4c6;--sage-d:#5a7a5c;
+  --blush:#d4a89a;--blush-l:#edddd8;--terracotta:#c4725a;--gold:#b8965a;--gold-l:#e8d5b0;
+  --char:#2c2c2c;--mid:#6b6b6b;--light:#a8a8a8;--border:#e0d8cc;--r:8px;
+  --font:'Cormorant Garamond',Georgia,serif;--mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--cream);color:var(--char);min-height:100dvh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.35}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--warm);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-left .logo{font-size:1.4rem;font-weight:300;letter-spacing:.03em}
+.topbar-left .logo em{font-style:italic;color:var(--sage-d)}
+.topbar-left .sep{color:var(--border);font-size:.9rem}
+.topbar-left .section-name{font-size:1.1rem;color:var(--terracotta);font-weight:500}
+.back-btn{background:none;border:1px solid var(--border);border-radius:var(--r);padding:6px 14px;font-family:var(--font);font-size:.9rem;color:var(--mid);cursor:pointer;transition:.2s}
+.back-btn:hover{border-color:var(--sage);color:var(--sage-d)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;background:var(--warm);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:14px 20px;font-family:var(--font);font-size:1rem;color:var(--light);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+.tab:hover{color:var(--mid)}
+.tab.active{color:var(--terracotta);border-bottom-color:var(--terracotta);font-weight:500}
+
+/* ── SCREENS ── */
+.screen{display:none;padding:28px 24px 100px;max-width:800px;margin:0 auto;animation:fadeIn .3s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── PROFILE SETUP ── */
+.profile-intro{text-align:center;margin-bottom:36px}
+.profile-intro h2{font-size:2rem;font-weight:300;margin-bottom:8px}
+.profile-intro h2 em{font-style:italic;color:var(--terracotta)}
+.profile-intro p{font-family:var(--mono);font-size:.65rem;color:var(--light);letter-spacing:.12em;text-transform:uppercase}
+
+.form-section{margin-bottom:32px}
+.form-section h3{font-size:1.15rem;font-weight:400;margin-bottom:14px;color:var(--char)}
+.form-section h3 span{color:var(--terracotta)}
+
+.body-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.body-card{background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 12px;text-align:center;cursor:pointer;transition:.2s}
+.body-card:hover{border-color:var(--sage)}
+.body-card.selected{border-color:var(--terracotta);background:linear-gradient(135deg,#faf5ef,#f5ede3)}
+.body-card .icon{font-size:2.2rem;margin-bottom:6px;display:block}
+.body-card .label{font-size:.85rem;color:var(--mid)}
+.body-card.selected .label{color:var(--terracotta);font-weight:500}
+
+.color-type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.color-card{background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:12px}
+.color-card:hover{border-color:var(--sage)}
+.color-card.selected{border-color:var(--terracotta);background:linear-gradient(135deg,#faf5ef,#f5ede3)}
+.color-swatch{width:36px;height:36px;border-radius:50%;flex-shrink:0}
+.color-card .label{font-size:.9rem;color:var(--mid)}
+.color-card.selected .label{color:var(--terracotta);font-weight:500}
+.color-card .sub{font-family:var(--mono);font-size:.55rem;color:var(--light);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+.lifestyle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.life-chip{background:var(--warm);border:1.5px solid var(--border);border-radius:20px;padding:10px 16px;text-align:center;cursor:pointer;transition:.2s;font-size:.85rem;color:var(--mid)}
+.life-chip:hover{border-color:var(--sage)}
+.life-chip.selected{border-color:var(--terracotta);background:var(--blush-l);color:var(--terracotta);font-weight:500}
+
+.save-profile-btn{display:block;width:100%;max-width:360px;margin:36px auto 0;padding:14px;background:var(--terracotta);color:#fff;border:none;border-radius:var(--r);font-family:var(--font);font-size:1.1rem;cursor:pointer;transition:.2s;letter-spacing:.02em}
+.save-profile-btn:hover{background:#b5634b}
+.save-profile-btn:disabled{background:var(--light);cursor:not-allowed}
+
+/* ── CAPSULE SCREEN ── */
+.capsule-header{margin-bottom:24px}
+.capsule-header h2{font-size:1.6rem;font-weight:300}
+.capsule-header h2 em{font-style:italic;color:var(--terracotta)}
+.capsule-header p{font-family:var(--mono);font-size:.6rem;color:var(--light);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+
+.capsule-type-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.capsule-pill{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--warm);font-family:var(--font);font-size:.85rem;color:var(--mid);cursor:pointer;transition:.2s}
+.capsule-pill:hover{border-color:var(--sage)}
+.capsule-pill.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta)}
+
+.outfit-card{background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;animation:fadeIn .3s ease}
+.outfit-num{font-family:var(--mono);font-size:.6rem;color:var(--light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.outfit-items{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.outfit-item{display:flex;align-items:center;gap:8px;background:var(--cream);border-radius:6px;padding:8px 12px;flex:1;min-width:140px}
+.outfit-item .item-photo{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--border)}
+.outfit-item .item-info{flex:1;min-width:0}
+.outfit-item .item-name{font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.outfit-item .item-cat{font-family:var(--mono);font-size:.5rem;color:var(--light);letter-spacing:.08em;text-transform:uppercase}
+.outfit-colors{display:flex;gap:4px;margin-bottom:10px;align-items:center}
+.outfit-colors .dot{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,.08)}
+.outfit-colors .harmony-label{font-family:var(--mono);font-size:.55rem;color:var(--sage-d);letter-spacing:.08em;margin-left:6px}
+.outfit-tip{font-size:.85rem;color:var(--mid);line-height:1.5;padding:10px 14px;background:linear-gradient(135deg,var(--gold-l),#f5ede3);border-radius:6px;border-left:3px solid var(--gold)}
+.outfit-tip strong{color:var(--terracotta);font-weight:500}
+
+.outfit-actions{display:flex;gap:8px;margin-top:12px}
+.outfit-action{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:none;font-family:var(--font);font-size:.82rem;color:var(--mid);cursor:pointer;transition:.2s}
+.outfit-action:hover{border-color:var(--sage);color:var(--sage-d)}
+.outfit-action.fav{border-color:var(--blush);color:var(--terracotta)}
+.outfit-action.fav.saved{background:var(--blush-l);border-color:var(--terracotta)}
+
+.no-items-msg{text-align:center;padding:60px 20px;color:var(--light)}
+.no-items-msg h3{font-size:1.4rem;font-weight:300;color:var(--mid);margin-bottom:8px}
+.no-items-msg p{font-size:.9rem;line-height:1.6}
+
+/* ── ADVICE SCREEN ── */
+.advice-card{background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.advice-card h3{font-size:1.05rem;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.advice-card h3 .icon{font-size:1.2rem}
+.advice-list{list-style:none;padding:0}
+.advice-list li{padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem;line-height:1.5;color:var(--mid)}
+.advice-list li:last-child{border-bottom:none}
+.advice-list li .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;margin-right:6px}
+.tag-do{background:#e8f5e9;color:#2e7d32}
+.tag-avoid{background:#fce4ec;color:#c62828}
+.tag-tip{background:var(--gold-l);color:var(--gold)}
+
+.wardrobe-gaps{margin-top:24px}
+.gap-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--cream);border-radius:6px;margin-bottom:8px}
+.gap-icon{width:40px;height:40px;border-radius:8px;background:var(--blush-l);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.gap-info .gap-name{font-size:.9rem;font-weight:500}
+.gap-info .gap-reason{font-size:.75rem;color:var(--light);margin-top:2px}
+
+/* ── EDIT PROFILE BUTTON ── */
+.edit-profile-float{position:fixed;bottom:24px;right:24px;width:48px;height:48px;border-radius:50%;background:var(--terracotta);color:#fff;border:none;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 16px rgba(196,114,90,.35);z-index:99;display:flex;align-items:center;justify-content:center;transition:.2s}
+.edit-profile-float:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(196,114,90,.45)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .topbar{padding:0 16px;height:52px}
+  .topbar-left .logo{font-size:1.2rem}
+  .tabs{padding:0 16px}
+  .tab{padding:12px 14px;font-size:.9rem}
+  .screen{padding:20px 16px 100px}
+  .profile-intro h2{font-size:1.6rem}
+  .body-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .body-card{padding:12px 8px}
+  .body-card .icon{font-size:1.8rem}
+  .color-type-grid{grid-template-columns:1fr}
+  .outfit-items{flex-direction:column}
+  .capsule-header h2{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo"><em>Spark</em></span>
+    <span class="sep">·</span>
+    <span class="section-name">✨ Стилист</span>
+  </div>
+  <a href="index.html" class="back-btn">← Гардероб</a>
+</div>
+
+<div class="tabs" id="mainTabs">
+  <button class="tab active" data-tab="capsules">Капсулы</button>
+  <button class="tab" data-tab="outfits">Образы</button>
+  <button class="tab" data-tab="advice">Советы</button>
+</div>
+
+<!-- PROFILE SETUP -->
+<div class="screen active" id="profileScreen">
+  <div class="profile-intro">
+    <h2>Расскажите о <em>себе</em></h2>
+    <p>Это поможет подобрать идеальные сочетания</p>
+  </div>
+
+  <div class="form-section">
+    <h3><span>01</span> Тип фигуры</h3>
+    <div class="body-grid" id="bodyTypeGrid"></div>
+  </div>
+
+  <div class="form-section">
+    <h3><span>02</span> Цветотип</h3>
+    <div class="color-type-grid" id="colorTypeGrid"></div>
+  </div>
+
+  <div class="form-section">
+    <h3><span>03</span> Стиль жизни <span style="font-size:.75rem;color:var(--light)">(можно несколько)</span></h3>
+    <div class="lifestyle-grid" id="lifestyleGrid"></div>
+  </div>
+
+  <button class="save-profile-btn" id="saveProfileBtn" onclick="saveProfile()">Готово — подобрать образы ✨</button>
+</div>
+
+<!-- CAPSULES -->
+<div class="screen" id="capsulesScreen">
+  <div class="capsule-header">
+    <h2>Ваши <em>капсулы</em></h2>
+    <p id="capsuleSummary"></p>
+  </div>
+  <div class="capsule-type-pills" id="capsulePills"></div>
+  <div id="capsuleContent"></div>
+</div>
+
+<!-- OUTFITS (favorites) -->
+<div class="screen" id="outfitsScreen">
+  <div class="capsule-header">
+    <h2>Избранные <em>образы</em></h2>
+    <p>Сохранённые сочетания из ваших вещей</p>
+  </div>
+  <div id="favContent"></div>
+</div>
+
+<!-- ADVICE -->
+<div class="screen" id="adviceScreen">
+  <div class="capsule-header">
+    <h2>Советы <em>стилиста</em></h2>
+    <p>Рекомендации на основе вашего профиля и гардероба</p>
+  </div>
+  <div id="adviceContent"></div>
+</div>
+
+<button class="edit-profile-float" onclick="showProfile()" title="Изменить профиль">⚙</button>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// SPARK STYLIST — Phase 1 Rule-Based Engine
+// ══════════════════════════════════════════════════════════
+
+const SK = 'konmari_v4';
+const PK = 'spark_profile';
+const FK = 'spark_favorites';
+
+// ── DATA: Body Types ──
+const BODY_TYPES = [
+  {id:'hourglass', icon:'⌛', label:'Песочные часы', desc:'Плечи ≈ бёдра, тонкая талия'},
+  {id:'pear',      icon:'🍐', label:'Груша',         desc:'Бёдра шире плеч'},
+  {id:'apple',     icon:'🍎', label:'Яблоко',        desc:'Объём в середине'},
+  {id:'rectangle', icon:'▬',  label:'Прямоугольник',  desc:'Плечи ≈ бёдра ≈ талия'},
+  {id:'invtri',    icon:'🔻', label:'Перевёрн. треуг.',desc:'Плечи шире бёдер'},
+];
+
+const COLOR_TYPES = [
+  {id:'spring', label:'Весна', sub:'Тёплый + контрастный', colors:['#F7C873','#FF9966','#88C9A1','#FFECD2']},
+  {id:'summer', label:'Лето',  sub:'Холодный + мягкий',    colors:['#B0C4DE','#DDA0DD','#C9CAD9','#E8D5D5']},
+  {id:'autumn', label:'Осень', sub:'Тёплый + мягкий',      colors:['#CD853F','#8B4513','#6B8E23','#DAA520']},
+  {id:'winter', label:'Зима',  sub:'Холодный + контрастный',colors:['#191970','#DC143C','#F5F5F5','#4169E1']},
+];
+
+const LIFESTYLES = [
+  {id:'office',  icon:'🏢', label:'Офис'},
+  {id:'casual',  icon:'🌿', label:'Кэжуал'},
+  {id:'sport',   icon:'🏃', label:'Спорт'},
+  {id:'evening', icon:'🌙', label:'Вечер'},
+  {id:'home',    icon:'🏠', label:'Дома'},
+];
+
+// ── DATA: Body type recommendations ──
+const BODY_RULES = {
+  hourglass: {
+    title: 'Песочные часы',
+    doList: [
+      'Приталенные силуэты, подчёркивающие талию',
+      'Wrap-платья и блузки с запахом',
+      'Высокая посадка брюк и юбок',
+      'Пояса и ремни на талии',
+      'V-образные вырезы'
+    ],
+    avoidList: [
+      'Мешковатые балахоны, скрывающие фигуру',
+      'Слишком объёмный верх и низ одновременно',
+      'Прямые силуэты без акцента на талии'
+    ],
+    accTips: [
+      'Тонкие пояса и ремни — ваш лучший друг',
+      'Среднего размера сумки на длинном ремне',
+      'Часы и браслеты привлекают внимание к талии'
+    ]
+  },
+  pear: {
+    title: 'Груша',
+    doList: [
+      'Яркие и привлекающие внимание топы',
+      'Акцент на плечах: лодочка, квадратный вырез',
+      'А-силуэт юбок и платьев',
+      'Прямые и слегка расклешённые брюки',
+      'Тёмный низ + светлый/яркий верх'
+    ],
+    avoidList: [
+      'Узкие юбки-карандаш (подчёркивают бёдра)',
+      'Яркие принты и светлые цвета на бёдрах',
+      'Брюки-карго и низкая посадка'
+    ],
+    accTips: [
+      'Крупные серьги и ожерелья — акцент наверх',
+      'Шарфы и платки на шею',
+      'Структурированная сумка среднего размера'
+    ]
+  },
+  apple: {
+    title: 'Яблоко',
+    doList: [
+      'Удлинённые силуэты и туники',
+      'Ампир — завышенная линия талии',
+      'V-образные вырезы удлиняют торс',
+      'Прямые брюки от бедра',
+      'Монохромные комплекты вытягивают фигуру'
+    ],
+    avoidList: [
+      'Ремни на самой широкой части',
+      'Обтягивающие ткани в области живота',
+      'Горизонтальные полосы в центре'
+    ],
+    accTips: [
+      'Длинные ожерелья и кулоны визуально удлиняют',
+      'Длинные шарфы, свисающие вертикально',
+      'V-образные украшения на шею'
+    ]
+  },
+  rectangle: {
+    title: 'Прямоугольник',
+    doList: [
+      'Создавайте иллюзию талии: пояса, баска',
+      'Многослойность и объёмные фактуры',
+      'Пеплум-топы и юбки с деталями',
+      'Платья и юбки А-силуэта',
+      'Контрастный верх и низ'
+    ],
+    avoidList: [
+      'Бесформенные прямые платья-колонны',
+      'Слишком обтягивающие вещи без акцентов',
+      'Одинаковый цвет сверху донизу без деталей'
+    ],
+    accTips: [
+      'Широкие ремни — создают талию',
+      'Объёмные сумки добавляют форму',
+      'Многослойные браслеты и украшения'
+    ]
+  },
+  invtri: {
+    title: 'Перевёрнутый треугольник',
+    doList: [
+      'Акцент на бёдрах: яркие юбки, принты внизу',
+      'Брюки-палаццо и широкие джинсы',
+      'Простой верх, интересный низ',
+      'Юбки А-силуэта и с воланами',
+      'Мягкие, не жёсткие плечи в жакетах'
+    ],
+    avoidList: [
+      'Подплечники и широкие вырезы-лодочки',
+      'Массивные украшения на шее и плечах',
+      'Яркие/принтованные топы при скромном низе'
+    ],
+    accTips: [
+      'Яркие сумки-клатчи на уровне бёдер',
+      'Браслеты на ногах, яркая обувь',
+      'Длинные ожерелья визуально сужают плечи'
+    ]
+  }
+};
+
+// ── DATA: Color harmony rules ──
+const NEUTRALS = ['Белый','Чёрный','Серый','Тёмно-серый','Бежевый','Тёмно-синий','Хаки','Коричневый','Тёмно-коричневый','Кремовый','Молочный','Слоновая кость','Графитовый'];
+const COLOR_WHEEL = {
+  'Красный':     {complement:['Зелёный','Изумрудный','Мятный','Оливковый'], analog:['Оранжевый','Розовый','Бордовый','Коралловый']},
+  'Синий':       {complement:['Оранжевый','Терракотовый','Персиковый','Рыжий'], analog:['Голубой','Бирюзовый','Тёмно-синий','Индиго']},
+  'Жёлтый':      {complement:['Фиолетовый','Лавандовый','Сливовый'], analog:['Горчичный','Золотой','Оранжевый','Лимонный']},
+  'Зелёный':     {complement:['Красный','Бордовый','Розовый'], analog:['Оливковый','Мятный','Изумрудный','Хаки']},
+  'Розовый':     {complement:['Зелёный','Оливковый','Мятный'], analog:['Пудровый','Фуксия','Коралловый','Лиловый']},
+  'Фиолетовый':  {complement:['Жёлтый','Горчичный','Золотой'], analog:['Лавандовый','Сливовый','Лиловый','Индиго']},
+  'Оранжевый':   {complement:['Синий','Голубой','Тёмно-синий'], analog:['Терракотовый','Коралловый','Персиковый','Рыжий']},
+  'Бирюзовый':   {complement:['Коралловый','Терракотовый','Оранжевый'], analog:['Мятный','Голубой','Изумрудный']},
+  'Бордовый':    {complement:['Изумрудный','Оливковый','Мятный'], analog:['Красный','Сливовый','Вишнёвый','Терракотовый']},
+  'Коралловый':  {complement:['Бирюзовый','Мятный','Изумрудный'], analog:['Розовый','Персиковый','Оранжевый']},
+  'Лавандовый':  {complement:['Горчичный','Золотой','Жёлтый'], analog:['Фиолетовый','Лиловый','Сливовый','Пудровый']},
+  'Горчичный':   {complement:['Фиолетовый','Лавандовый','Индиго'], analog:['Золотой','Жёлтый','Оливковый']},
+  'Мятный':      {complement:['Коралловый','Розовый','Красный'], analog:['Бирюзовый','Зелёный','Голубой']},
+  'Терракотовый':{complement:['Синий','Тёмно-синий','Голубой'], analog:['Оранжевый','Коричневый','Рыжий','Бордовый']},
+  'Изумрудный':  {complement:['Красный','Бордовый','Коралловый'], analog:['Зелёный','Бирюзовый','Оливковый']},
+  'Оливковый':   {complement:['Бордовый','Розовый','Фуксия'], analog:['Хаки','Зелёный','Горчичный']},
+  'Голубой':     {complement:['Оранжевый','Коралловый','Персиковый'], analog:['Синий','Бирюзовый','Мятный']},
+  'Персиковый':  {complement:['Голубой','Синий','Бирюзовый'], analog:['Коралловый','Розовый','Пудровый']},
+  'Пудровый':    {complement:['Мятный','Оливковый'], analog:['Розовый','Персиковый','Лавандовый']},
+  'Индиго':      {complement:['Горчичный','Золотой','Оранжевый'], analog:['Синий','Тёмно-синий','Фиолетовый']},
+  'Сливовый':    {complement:['Горчичный','Золотой','Жёлтый'], analog:['Фиолетовый','Бордовый','Лавандовый']},
+  'Фуксия':      {complement:['Оливковый','Зелёный','Изумрудный'], analog:['Розовый','Пудровый','Лиловый','Сливовый']},
+  'Золотой':     {complement:['Фиолетовый','Лавандовый','Индиго'], analog:['Горчичный','Жёлтый','Бежевый']},
+  'Рыжий':       {complement:['Синий','Тёмно-синий','Индиго'], analog:['Оранжевый','Терракотовый','Коричневый']},
+};
+
+// Color name → hex (approximation for display)
+const COLOR_HEX = {
+  'Белый':'#FFFFFF','Чёрный':'#1a1a1a','Серый':'#9E9E9E','Тёмно-серый':'#5a5a5a',
+  'Бежевый':'#D4B896','Кремовый':'#FFFDD0','Молочный':'#FDFAF0','Слоновая кость':'#FFFFF0',
+  'Красный':'#E53935','Бордовый':'#800020','Вишнёвый':'#911938','Коралловый':'#FF7F50',
+  'Розовый':'#F48FB1','Пудровый':'#F4C2C2','Фуксия':'#FF00FF','Лиловый':'#C8A2C8',
+  'Оранжевый':'#FF9800','Терракотовый':'#CC5533','Персиковый':'#FFCBA4','Рыжий':'#C45100',
+  'Жёлтый':'#FDD835','Горчичный':'#C49B1D','Золотой':'#DAA520','Лимонный':'#FFF44F',
+  'Зелёный':'#4CAF50','Изумрудный':'#046307','Оливковый':'#6B8E23','Мятный':'#98FF98',
+  'Хаки':'#BDB76B','Синий':'#1E88E5','Тёмно-синий':'#1a237e','Голубой':'#64B5F6',
+  'Бирюзовый':'#00BCD4','Индиго':'#3F51B5','Фиолетовый':'#9C27B0','Лавандовый':'#B39DDB',
+  'Сливовый':'#6A1B4D','Коричневый':'#795548','Тёмно-коричневый':'#4E342E',
+  'Графитовый':'#3a3a3a',
+};
+
+// ── ROLE MAPPING: category → outfit role ──
+const ROLE_MAP = {
+  // Верх
+  'Свитеры и кардиганы':'top','Блузки и рубашки':'top','Футболки и топы':'top',
+  'Свитеры':'top','Кардиганы':'top','Блузки':'top','Рубашки':'top',
+  'Футболки':'top','Топы':'top','Толстовки':'top',
+  // Низ
+  'Брюки и джинсы':'bottom','Брюки':'bottom','Джинсы':'bottom','Шорты':'bottom',
+  'Юбки':'bottom',
+  // Платья
+  'Платья и юбки':'dress','Платья':'dress',
+  // Верхняя одежда
+  'Верхняя одежда':'outer','Пальто':'outer','Куртки':'outer','Дублёнки':'outer','Жилеты':'outer',
+  // Обувь
+  'Обувь':'shoes','Повседневная':'shoes','Парадная':'shoes','Спортивная':'shoes',
+  'Зимняя':'shoes','Летняя':'shoes','Сапоги':'shoes','Кроссовки':'shoes',
+  'Туфли':'shoes','Босоножки':'shoes','Ботинки':'shoes',
+  // Аксессуары
+  'Аксессуары':'acc','Сумки':'acc','Украшения':'acc','Ремни':'acc',
+  'Шарфы и платки':'acc','Шляпы':'acc','Очки':'acc','Часы':'acc',
+  'Перчатки':'acc','Зонты':'acc',
+};
+
+// ── ACCESSORY TIPS by occasion ──
+const ACC_TIPS = {
+  office: ['Структурированная сумка-тоут','Минималистичные часы','Тонкая цепочка или серьги-гвоздики','Шёлковый платок на шею'],
+  casual: ['Сумка-кроссбоди','Крупные серьги или браслеты','Широкий ремень','Палантин или большой шарф'],
+  evening:['Клатч или мини-сумка','Статементные серьги','Коктейльное кольцо','Блестящий браслет'],
+  sport:  ['Спортивная сумка или рюкзак','Минималистичные часы','Кепка или повязка'],
+  home:   ['Мягкие тапочки','Уютный палантин'],
+};
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let profile = JSON.parse(localStorage.getItem(PK)||'null');
+let favorites = JSON.parse(localStorage.getItem(FK)||'[]');
+let currentCapsuleType = 'all';
+let generatedOutfits = [];
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderProfileForm();
+  setupTabs();
+  if (profile && profile.bodyType) {
+    showMainUI();
+  }
+});
+
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const tab = t.dataset.tab;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      if (tab === 'capsules') {
+        document.getElementById('capsulesScreen').classList.add('active');
+        generateCapsules();
+      } else if (tab === 'outfits') {
+        document.getElementById('outfitsScreen').classList.add('active');
+        renderFavorites();
+      } else if (tab === 'advice') {
+        document.getElementById('adviceScreen').classList.add('active');
+        renderAdvice();
+      }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// PROFILE FORM
+// ══════════════════════════════════════════════════════════
+let tempProfile = {bodyType:null, colorType:null, lifestyle:[]};
+
+function renderProfileForm() {
+  // Body types
+  const bg = document.getElementById('bodyTypeGrid');
+  bg.innerHTML = BODY_TYPES.map(b => `
+    <div class="body-card ${tempProfile.bodyType===b.id?'selected':''}" onclick="selectBody('${b.id}')">
+      <span class="icon">${b.icon}</span>
+      <div class="label">${b.label}</div>
+    </div>`).join('');
+
+  // Color types
+  const cg = document.getElementById('colorTypeGrid');
+  cg.innerHTML = COLOR_TYPES.map(c => `
+    <div class="color-card ${tempProfile.colorType===c.id?'selected':''}" onclick="selectColor('${c.id}')">
+      <div class="color-swatch" style="background:linear-gradient(135deg,${c.colors[0]},${c.colors[1]},${c.colors[2]},${c.colors[3]})"></div>
+      <div><div class="label">${c.label}</div><div class="sub">${c.sub}</div></div>
+    </div>`).join('');
+
+  // Lifestyles
+  const lg = document.getElementById('lifestyleGrid');
+  lg.innerHTML = LIFESTYLES.map(l => `
+    <div class="life-chip ${tempProfile.lifestyle.includes(l.id)?'selected':''}" onclick="toggleLifestyle('${l.id}')">
+      ${l.icon} ${l.label}
+    </div>`).join('');
+
+  // Restore from saved
+  if (profile) {
+    tempProfile = {...profile, lifestyle:[...(profile.lifestyle||[])]};
+    renderProfileForm();
+  }
+}
+
+function selectBody(id) { tempProfile.bodyType = id; renderProfileForm(); }
+function selectColor(id) { tempProfile.colorType = tempProfile.colorType===id ? null : id; renderProfileForm(); }
+function toggleLifestyle(id) {
+  const i = tempProfile.lifestyle.indexOf(id);
+  i >= 0 ? tempProfile.lifestyle.splice(i,1) : tempProfile.lifestyle.push(id);
+  renderProfileForm();
+}
+
+function saveProfile() {
+  if (!tempProfile.bodyType) { alert('Выберите тип фигуры'); return; }
+  if (tempProfile.lifestyle.length === 0) tempProfile.lifestyle = ['casual'];
+  profile = {...tempProfile};
+  localStorage.setItem(PK, JSON.stringify(profile));
+  showMainUI();
+}
+
+function showProfile() {
+  tempProfile = profile ? {...profile, lifestyle:[...(profile.lifestyle||[])]} : {bodyType:null,colorType:null,lifestyle:[]};
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('profileScreen').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  renderProfileForm();
+}
+
+function showMainUI() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('capsulesScreen').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-tab="capsules"]').classList.add('active');
+  generateCapsules();
+}
+
+// ══════════════════════════════════════════════════════════
+// READ WARDROBE FROM KONMARI DATA
+// ══════════════════════════════════════════════════════════
+function getWardrobeItems() {
+  const raw = JSON.parse(localStorage.getItem(SK)||'null');
+  if (!raw || !raw.items) return [];
+  return raw.items.filter(i => {
+    // Only items that "spark joy" or at least not removed
+    return i.joy !== 'nospark';
+  }).map(i => {
+    const role = guessRole(i);
+    return { ...i, role };
+  });
+}
+
+function guessRole(item) {
+  // Try category, subcategory
+  for (const field of [item.sub, item.cat, item.section]) {
+    if (field && ROLE_MAP[field]) return ROLE_MAP[field];
+  }
+  // Try section-level mapping
+  const sec = (item.section||'').toLowerCase();
+  if (sec.includes('обувь')) return 'shoes';
+  if (sec.includes('аксессуар')) return 'acc';
+  if (sec.includes('косметик') || sec.includes('уход')) return null;
+  if (sec.includes('документ')) return null;
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════
+// COLOR HARMONY ENGINE
+// ══════════════════════════════════════════════════════════
+function isNeutral(colorName) {
+  return NEUTRALS.some(n => colorName && colorName.toLowerCase().includes(n.toLowerCase()));
+}
+
+function getColorHarmony(colors) {
+  const nonNeutral = colors.filter(c => c && !isNeutral(c));
+  if (nonNeutral.length <= 1) return {score:3, label:'Нейтральная база', type:'neutral'};
+  
+  // Check all pairs
+  let bestScore = 1;
+  let bestType = 'ok';
+  for (let i = 0; i < nonNeutral.length; i++) {
+    for (let j = i+1; j < nonNeutral.length; j++) {
+      const h = checkPairHarmony(nonNeutral[i], nonNeutral[j]);
+      if (h.score > bestScore) { bestScore = h.score; bestType = h.type; }
+    }
+  }
+  
+  const labels = {complement:'Комплементарные',analog:'Аналоговые',mono:'Монохром',ok:'Сочетаемые'};
+  return {score: bestScore, label: labels[bestType]||'Сочетаемые', type: bestType};
+}
+
+function checkPairHarmony(a, b) {
+  if (!a || !b) return {score:1, type:'ok'};
+  // Check both directions
+  for (const [color, rules] of Object.entries(COLOR_WHEEL)) {
+    if (matchesColor(a, color)) {
+      if (rules.complement.some(c => matchesColor(b, c))) return {score:3, type:'complement'};
+      if (rules.analog.some(c => matchesColor(b, c))) return {score:2, type:'analog'};
+    }
+    if (matchesColor(b, color)) {
+      if (rules.complement.some(c => matchesColor(a, c))) return {score:3, type:'complement'};
+      if (rules.analog.some(c => matchesColor(a, c))) return {score:2, type:'analog'};
+    }
+  }
+  // Same color family = mono
+  if (a === b) return {score:2, type:'mono'};
+  return {score:1, type:'ok'};
+}
+
+function matchesColor(itemColor, targetColor) {
+  if (!itemColor || !targetColor) return false;
+  return itemColor.toLowerCase() === targetColor.toLowerCase();
+}
+
+// ══════════════════════════════════════════════════════════
+// CAPSULE GENERATOR
+// ══════════════════════════════════════════════════════════
+function generateCapsules() {
+  const items = getWardrobeItems();
+  const tops = items.filter(i => i.role === 'top');
+  const bottoms = items.filter(i => i.role === 'bottom');
+  const dresses = items.filter(i => i.role === 'dress');
+  const shoes = items.filter(i => i.role === 'shoes');
+  const accs = items.filter(i => i.role === 'acc');
+  const outers = items.filter(i => i.role === 'outer');
+
+  const total = tops.length + bottoms.length + dresses.length + shoes.length;
+  document.getElementById('capsuleSummary').textContent = 
+    `${items.filter(i=>i.role).length} вещей в гардеробе · ${tops.length} верх · ${bottoms.length} низ · ${dresses.length} платьев · ${shoes.length} обувь`;
+
+  if (total < 2) {
+    document.getElementById('capsuleContent').innerHTML = `
+      <div class="no-items-msg">
+        <h3>Пока мало вещей</h3>
+        <p>Добавьте вещи в Spark-гардероб, чтобы я могла подобрать капсулы.<br>
+        Нужно минимум: несколько верхов, низов или платьев + обувь.</p>
+      </div>`;
+    return;
+  }
+
+  // Generate outfits
+  generatedOutfits = [];
+
+  // Top + Bottom combos
+  for (const top of tops) {
+    for (const bot of bottoms) {
+      const colors = [top.color, bot.color].filter(Boolean);
+      const harmony = getColorHarmony(colors);
+      const shoe = findBestShoe(shoes, colors);
+      const acc = findBestAcc(accs, colors);
+      const score = harmony.score + (top.joy==='spark'?1:0) + (bot.joy==='spark'?1:0);
+      
+      generatedOutfits.push({
+        type: 'top+bottom',
+        items: [top, bot, shoe, acc].filter(Boolean),
+        harmony, score, colors,
+        occasion: guessOccasion([top, bot])
+      });
+    }
+  }
+
+  // Dress combos
+  for (const dress of dresses) {
+    const colors = [dress.color].filter(Boolean);
+    const shoe = findBestShoe(shoes, colors);
+    const acc = findBestAcc(accs, colors);
+    const score = 2 + (dress.joy==='spark'?1:0);
+    
+    generatedOutfits.push({
+      type: 'dress',
+      items: [dress, shoe, acc].filter(Boolean),
+      harmony: getColorHarmony(colors),
+      score, colors,
+      occasion: guessOccasion([dress])
+    });
+  }
+
+  // Sort by score
+  generatedOutfits.sort((a,b) => b.score - a.score);
+
+  // Render pills
+  renderCapsulePills();
+  renderOutfitCards();
+}
+
+function findBestShoe(shoes, existingColors) {
+  if (!shoes.length) return null;
+  // Prefer neutral shoes, then color-matching
+  const neutralShoes = shoes.filter(s => isNeutral(s.color));
+  if (neutralShoes.length) return neutralShoes[Math.floor(Math.random()*neutralShoes.length)];
+  return shoes[Math.floor(Math.random()*shoes.length)];
+}
+
+function findBestAcc(accs, existingColors) {
+  if (!accs.length) return null;
+  return accs[Math.floor(Math.random()*accs.length)];
+}
+
+function guessOccasion(items) {
+  // Simple heuristic based on category names
+  const cats = items.map(i => (i.cat||'')+(i.sub||'')).join(' ').toLowerCase();
+  if (cats.includes('блузк') || cats.includes('рубашк') || cats.includes('брюки')) return 'office';
+  if (cats.includes('платье') || cats.includes('парадн')) return 'evening';
+  if (cats.includes('спорт') || cats.includes('кроссов')) return 'sport';
+  return 'casual';
+}
+
+function renderCapsulePills() {
+  const occasions = ['all',...new Set(generatedOutfits.map(o => o.occasion))];
+  const labels = {all:'Все',office:'Рабочие',casual:'Кэжуал',evening:'Вечерние',sport:'Спортивные',home:'Домашние'};
+  const el = document.getElementById('capsulePills');
+  el.innerHTML = occasions.map(o => 
+    `<button class="capsule-pill ${o===currentCapsuleType?'active':''}" onclick="filterCapsule('${o}')">${labels[o]||o} <span style="opacity:.6">(${o==='all'?generatedOutfits.length:generatedOutfits.filter(x=>x.occasion===o).length})</span></button>`
+  ).join('');
+}
+
+function filterCapsule(type) {
+  currentCapsuleType = type;
+  renderCapsulePills();
+  renderOutfitCards();
+}
+
+function renderOutfitCards() {
+  const filtered = currentCapsuleType === 'all' 
+    ? generatedOutfits 
+    : generatedOutfits.filter(o => o.occasion === currentCapsuleType);
+  
+  // Limit to 20 best
+  const shown = filtered.slice(0, 20);
+  const cont = document.getElementById('capsuleContent');
+
+  if (!shown.length) {
+    cont.innerHTML = `<div class="no-items-msg"><h3>Нет образов</h3><p>Попробуйте другую категорию или добавьте вещи в гардероб</p></div>`;
+    return;
+  }
+
+  cont.innerHTML = shown.map((outfit, idx) => {
+    const isFav = favorites.some(f => outfitId(f) === outfitId(outfit));
+    const occasion = {office:'🏢 Офис',casual:'🌿 Кэжуал',evening:'🌙 Вечер',sport:'🏃 Спорт',home:'🏠 Дом'};
+    const tip = getOutfitTip(outfit);
+
+    return `
+    <div class="outfit-card">
+      <div class="outfit-num">Образ ${idx+1} · ${occasion[outfit.occasion]||'🌿 Кэжуал'}</div>
+      <div class="outfit-items">
+        ${outfit.items.map(item => `
+          <div class="outfit-item">
+            ${item.photo 
+              ? `<img class="item-photo" src="${item.photo}" alt="">` 
+              : `<div class="item-photo" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:${COLOR_HEX[item.color]||'var(--border)'};color:${isLightColor(COLOR_HEX[item.color]||'#ccc')?'#333':'#fff'}">${(item.name||'?')[0]}</div>`}
+            <div class="item-info">
+              <div class="item-name">${item.name||'Без названия'}</div>
+              <div class="item-cat">${item.sub||item.cat||''}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="outfit-colors">
+        ${outfit.items.map(i => i.color && COLOR_HEX[i.color] ? `<div class="dot" style="background:${COLOR_HEX[i.color]}"></div>` : '').join('')}
+        <span class="harmony-label">${outfit.harmony.label}</span>
+      </div>
+      ${tip ? `<div class="outfit-tip">${tip}</div>` : ''}
+      <div class="outfit-actions">
+        <button class="outfit-action fav ${isFav?'saved':''}" onclick="toggleFav(${idx})">
+          ${isFav ? '❤️ Сохранено' : '🤍 В избранное'}
+        </button>
+        <button class="outfit-action" onclick="regenerateOne(${idx})">🔄 Другой вариант</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getOutfitTip(outfit) {
+  if (!profile) return '';
+  const rules = BODY_RULES[profile.bodyType];
+  if (!rules) return '';
+  
+  // Check for accessory suggestion
+  const hasAcc = outfit.items.some(i => i.role === 'acc');
+  const occasion = outfit.occasion || 'casual';
+  const tips = ACC_TIPS[occasion] || ACC_TIPS.casual;
+  
+  if (!hasAcc && tips.length) {
+    return `<strong>💡 Совет:</strong> Добавьте ${tips[Math.floor(Math.random()*tips.length)].toLowerCase()}`;
+  }
+  
+  // Random body-type tip
+  if (rules.accTips && rules.accTips.length) {
+    return `<strong>💎 Для вашей фигуры:</strong> ${rules.accTips[Math.floor(Math.random()*rules.accTips.length)]}`;
+  }
+  return '';
+}
+
+function outfitId(outfit) {
+  return outfit.items.map(i => i.name||i.id||'').sort().join('|');
+}
+
+function toggleFav(idx) {
+  const outfit = generatedOutfits[idx];
+  if (!outfit) return;
+  const id = outfitId(outfit);
+  const fi = favorites.findIndex(f => outfitId(f) === id);
+  if (fi >= 0) {
+    favorites.splice(fi, 1);
+  } else {
+    favorites.push({...outfit, savedAt: Date.now()});
+  }
+  localStorage.setItem(FK, JSON.stringify(favorites));
+  renderOutfitCards();
+}
+
+function regenerateOne(idx) {
+  // Shuffle accessories/shoes for this outfit
+  const items = getWardrobeItems();
+  const shoes = items.filter(i => i.role === 'shoes');
+  const accs = items.filter(i => i.role === 'acc');
+  const outfit = generatedOutfits[idx];
+  if (!outfit) return;
+  
+  // Replace shoe and acc with random alternatives
+  outfit.items = outfit.items.filter(i => i.role !== 'shoes' && i.role !== 'acc');
+  if (shoes.length) outfit.items.push(shoes[Math.floor(Math.random()*shoes.length)]);
+  if (accs.length) outfit.items.push(accs[Math.floor(Math.random()*accs.length)]);
+  
+  renderOutfitCards();
+}
+
+// ══════════════════════════════════════════════════════════
+// FAVORITES
+// ══════════════════════════════════════════════════════════
+function renderFavorites() {
+  const cont = document.getElementById('favContent');
+  if (!favorites.length) {
+    cont.innerHTML = `<div class="no-items-msg"><h3>Пока пусто</h3><p>Нажмите 🤍 на любом образе, чтобы сохранить его</p></div>`;
+    return;
+  }
+  cont.innerHTML = favorites.map((outfit, idx) => {
+    return `
+    <div class="outfit-card">
+      <div class="outfit-num">Избранное · ${new Date(outfit.savedAt).toLocaleDateString('ru')}</div>
+      <div class="outfit-items">
+        ${outfit.items.map(item => `
+          <div class="outfit-item">
+            ${item.photo 
+              ? `<img class="item-photo" src="${item.photo}" alt="">` 
+              : `<div class="item-photo" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:${COLOR_HEX[item.color]||'var(--border)'};color:${isLightColor(COLOR_HEX[item.color]||'#ccc')?'#333':'#fff'}">${(item.name||'?')[0]}</div>`}
+            <div class="item-info">
+              <div class="item-name">${item.name||'Без названия'}</div>
+              <div class="item-cat">${item.sub||item.cat||''}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="outfit-colors">
+        ${outfit.items.map(i => i.color && COLOR_HEX[i.color] ? `<div class="dot" style="background:${COLOR_HEX[i.color]}"></div>` : '').join('')}
+      </div>
+      <div class="outfit-actions">
+        <button class="outfit-action fav saved" onclick="removeFav(${idx})">❌ Убрать</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function removeFav(idx) {
+  favorites.splice(idx, 1);
+  localStorage.setItem(FK, JSON.stringify(favorites));
+  renderFavorites();
+}
+
+// ══════════════════════════════════════════════════════════
+// ADVICE SCREEN
+// ══════════════════════════════════════════════════════════
+function renderAdvice() {
+  if (!profile || !profile.bodyType) return;
+  const rules = BODY_RULES[profile.bodyType];
+  const items = getWardrobeItems();
+  const cont = document.getElementById('adviceContent');
+
+  let html = '';
+
+  // Body type advice
+  html += `
+  <div class="advice-card">
+    <h3><span class="icon">👗</span> Тип фигуры: ${rules.title}</h3>
+    <ul class="advice-list">
+      ${rules.doList.map(d => `<li><span class="tag tag-do">✓ да</span>${d}</li>`).join('')}
+      ${rules.avoidList.map(d => `<li><span class="tag tag-avoid">✗ нет</span>${d}</li>`).join('')}
+    </ul>
+  </div>`;
+
+  // Accessory tips
+  html += `
+  <div class="advice-card">
+    <h3><span class="icon">💍</span> Аксессуары для вашей фигуры</h3>
+    <ul class="advice-list">
+      ${rules.accTips.map(t => `<li><span class="tag tag-tip">💡</span>${t}</li>`).join('')}
+    </ul>
+  </div>`;
+
+  // Color type advice
+  if (profile.colorType) {
+    const ct = COLOR_TYPES.find(c => c.id === profile.colorType);
+    const colorAdvice = {
+      spring: {best:['Тёплые яркие: коралловый, персиковый, золотой, тёплый зелёный','Кремовый и тёплый бежевый как база','Яркие акценты: бирюзовый, красный'],avoid:['Чёрный (заменить на тёмно-коричневый или тёмно-синий)','Холодные серые и ледяные оттенки']},
+      summer: {best:['Приглушённые холодные: пудровый, лавандовый, серо-голубой','Серый, сине-серый, розовый как база','Мягкие акценты: малиновый, бирюзовый'],avoid:['Ярко-оранжевый и ярко-жёлтый','Чистый чёрный (лучше тёмно-синий или графит)']},
+      autumn: {best:['Тёплые землистые: терракотовый, горчичный, оливковый, бордовый','Коричневый и бежевый как база','Золото в украшениях'],avoid:['Холодный розовый и фуксия','Ярко-синий и ледяной голубой','Серебро в украшениях']},
+      winter: {best:['Чистые яркие: красный, синий кобальт, изумрудный, фуксия','Чёрный и белоснежный как база','Серебро и платина в украшениях'],avoid:['Тёплые приглушённые: бежевый, горчичный, оливковый','Пастельные размытые оттенки']},
+    };
+    const ca = colorAdvice[profile.colorType];
+    if (ca) {
+      html += `
+      <div class="advice-card">
+        <h3><span class="icon">🎨</span> Цветотип: ${ct.label} (${ct.sub})</h3>
+        <ul class="advice-list">
+          ${ca.best.map(d => `<li><span class="tag tag-do">✓ да</span>${d}</li>`).join('')}
+          ${ca.avoid.map(d => `<li><span class="tag tag-avoid">✗ нет</span>${d}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+  }
+
+  // Wardrobe gaps analysis
+  const tops = items.filter(i => i.role === 'top');
+  const bottoms = items.filter(i => i.role === 'bottom');
+  const dresses = items.filter(i => i.role === 'dress');
+  const shoes = items.filter(i => i.role === 'shoes');
+  const accs = items.filter(i => i.role === 'acc');
+  const outers = items.filter(i => i.role === 'outer');
+
+  const gaps = [];
+  if (tops.length < 3) gaps.push({icon:'👕',name:'Верхняя часть',reason:`Всего ${tops.length} — нужно минимум 3-5 для разнообразия`});
+  if (bottoms.length < 2) gaps.push({icon:'👖',name:'Низ',reason:`Всего ${bottoms.length} — нужно минимум 2-3 варианта`});
+  if (shoes.length < 2) gaps.push({icon:'👟',name:'Обувь',reason:`Всего ${shoes.length} — нужна хотя бы пара на разные случаи`});
+  if (outers.length < 1) gaps.push({icon:'🧥',name:'Верхняя одежда',reason:'Нет ни одной — подумайте о базовом пальто или куртке'});
+  if (accs.length < 2) gaps.push({icon:'👜',name:'Аксессуары',reason:'Мало аксессуаров — они завершают образ'});
+
+  // Color diversity check
+  const allColors = items.map(i => i.color).filter(Boolean);
+  const uniqueColors = [...new Set(allColors)];
+  const neutralCount = allColors.filter(c => isNeutral(c)).length;
+  const colorCount = allColors.length - neutralCount;
+  if (allColors.length > 5 && colorCount < 2) {
+    gaps.push({icon:'🎨',name:'Цветовые акценты',reason:'Почти весь гардероб в нейтральных тонах — добавьте 1-2 ярких акцента'});
+  }
+  if (allColors.length > 5 && neutralCount < 2) {
+    gaps.push({icon:'⬛',name:'Нейтральная база',reason:'Мало базовых нейтральных вещей — они связывают яркие элементы'});
+  }
+
+  if (gaps.length) {
+    html += `
+    <div class="advice-card">
+      <h3><span class="icon">🔍</span> Пробелы в гардеробе</h3>
+      <div class="wardrobe-gaps">
+        ${gaps.map(g => `
+          <div class="gap-item">
+            <div class="gap-icon">${g.icon}</div>
+            <div class="gap-info">
+              <div class="gap-name">${g.name}</div>
+              <div class="gap-reason">${g.reason}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  } else {
+    html += `
+    <div class="advice-card">
+      <h3><span class="icon">✅</span> Гардероб сбалансирован!</h3>
+      <ul class="advice-list"><li>У вас хорошая база вещей для создания разнообразных образов</li></ul>
+    </div>`;
+  }
+
+  // Occasion-specific accessory tips
+  const lifeLabels = {office:'Для офиса',casual:'На каждый день',evening:'На вечер',sport:'Для спорта',home:'Для дома'};
+  const relevantLifestyles = profile.lifestyle.length ? profile.lifestyle : ['casual'];
+  
+  html += `
+  <div class="advice-card">
+    <h3><span class="icon">✨</span> Аксессуары по случаю</h3>
+    <ul class="advice-list">
+      ${relevantLifestyles.map(ls => {
+        const tips = ACC_TIPS[ls] || [];
+        return tips.map(t => `<li><span class="tag tag-tip">${lifeLabels[ls]||ls}</span>${t}</li>`).join('');
+      }).join('')}
+    </ul>
+  </div>`;
+
+  cont.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+function isLightColor(hex) {
+  if (!hex || hex.length < 7) return true;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return (r*0.299 + g*0.587 + b*0.114) > 160;
+}
+</script>
+</body>
+</html>

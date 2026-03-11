@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Spark</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spark">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234a5f80'/%3E%3Cstop offset='100%25' stop-color='%238fa4c8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='115' fill='url(%23g)'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-size='280' font-family='system-ui' fill='white'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234a5f80'/%3E%3Cstop offset='100%25' stop-color='%238fa4c8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='115' fill='url(%23g)'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-size='280' font-family='system-ui' fill='white'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ВАРИАНТ C: светлый · тауп/песок · все цвета из палитры */
+  --bg:#f5f0ea;
+  --sf:#ffffff;
+  --sf2:#ede6dd;
+  --sf3:#e0d8cc;
+
+  --bd:rgba(140,110,88,.15);
+  --bd2:rgba(140,110,88,.28);
+
+  --tx:#2a2018;
+  --tx2:#7a6858;
+  --tx3:#a89888;
+
+  --blue:#6b7fa3;
+  --blue-l:#4a5f80;
+  --blue-d:#3a4f70;
+  --terra:#b8673a;
+  --terra-l:#d4855a;
+  --green:#2d6050;
+  --sand:#c8b49a;
+  --taupe:#9e8878;
+
+  /* все цвета из палитры в градиентах */
+  --g1:linear-gradient(135deg,#6b7fa3,#8fa4c8);
+  --g2:linear-gradient(135deg,#b8673a,#d4855a);
+  --g3:linear-gradient(135deg,#2d6050,#4a9070);
+  --g4:linear-gradient(135deg,#9e8878,#c8b49a);
+  --g5:linear-gradient(135deg,#4a5f80,#6b7fa3);
+
+  --g6:linear-gradient(135deg,#a0628c,#c8849e);
+
+  --acc:#6b7fa3;
+  --r:16px; --r2:12px;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--sf3);border-radius:2px}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  padding: env(safe-area-inset-top) 16px 0;
+  min-height: calc(56px + env(safe-area-inset-top));
+  display:flex; align-items:center; gap:10px;
+  position:sticky; top:0; z-index:200;
+  background:rgba(250,246,240,.97);border-bottom:2px solid transparent;border-image:linear-gradient(90deg,#6b7fa3,#b8673a,#3a7060,#9e8878) 1;
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--bd);
+}
+.topbar-inner{
+  display:flex;align-items:center;gap:10px;width:100%;
+  height:56px;
+}
+.back-btn{
+  display:none;align-items:center;gap:4px;
+  padding:8px 12px;border-radius:20px;
+  background:var(--sf2);border:1px solid var(--bd2);
+  cursor:pointer;flex-shrink:0;transition:.15s;
+  color:var(--blue-l);font-size:.88rem;font-weight:700;
+  white-space:nowrap;
+}
+.back-btn.vis{display:flex}
+.back-btn:hover{background:var(--sf3);color:var(--tx)}
+.back-btn::before{content:'‹';font-size:1.2rem;line-height:1;font-weight:400}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0}
+.brand-logo{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--g1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;color:#fff;
+  box-shadow:0 4px 16px rgba(107,127,163,.45);
+}
+.brand-name{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;
+  background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-center{flex:1;display:flex;align-items:center;justify-content:center}
+.page-title{font-size:.95rem;font-weight:700;color:var(--tx);text-align:center;line-height:1.2;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-right{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.stats-row{display:flex;gap:6px}
+.stat-chip{
+  padding:5px 10px;border-radius:20px;background:var(--sf2);border:1px solid var(--bd);
+  font-size:.72rem;color:var(--tx2);display:flex;align-items:center;gap:4px;
+}
+.stat-chip strong{color:var(--tx);font-weight:700;font-size:.8rem}
+.stat-chip:nth-child(1){background:rgba(107,127,163,.12);border-color:rgba(107,127,163,.3);color:#4a5f80}
+.stat-chip:nth-child(1) strong{color:#3a4f70}
+.stat-chip:nth-child(2){background:rgba(45,96,80,.12);border-color:rgba(45,96,80,.3);color:#2d6050}
+.stat-chip:nth-child(2) strong{color:#1e4038}
+
+/* ══ SCREENS ══ */
+.screen{display:none;min-height:100vh;padding:24px 18px 100px}
+.screen.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ HOME ══ */
+.home-hero{
+  margin-bottom:32px;
+  padding:28px 22px 24px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#e8f0f8 0%,#f5ede4 50%,#f0e8e0 100%);
+  border:1px solid rgba(107,127,163,.15);
+  position:relative;overflow:hidden;
+}
+.home-hero::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,rgba(184,103,58,.18),transparent 70%);
+}
+.home-hero::after{
+  content:'';position:absolute;bottom:-20px;left:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(45,96,80,.12),transparent 70%);
+}
+.home-hero h2{font-size:2.6rem;font-weight:800;line-height:1.15;letter-spacing:-.03em;margin-bottom:10px;color:#2a2018}
+.home-hero h2 .grad{background:linear-gradient(135deg,#b8673a,#6b7fa3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.home-hero p{font-size:.88rem;color:#7a6858;line-height:1.5;position:relative}
+
+.sections-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.section-tile{
+  background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
+  padding:22px 18px 18px;cursor:pointer;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+}
+.section-tile::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  border-radius:var(--r) var(--r) 0 0;
+}
+.section-tile::after{content:'';position:absolute;inset:0;opacity:0;transition:.25s;
+  background:radial-gradient(circle at 30% 20%,rgba(107,127,163,.08),transparent 60%);pointer-events:none}
+.section-tile:hover,.section-tile:active{transform:scale(.97);border-color:var(--bd2)}
+.section-tile:hover::after{opacity:1}
+.tile-top{display:flex;align-items:flex-start;justify-content:space-between}
+.tile-icon-wrap{width:48px;height:48px;border-radius:12px;background:var(--sf2);border:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.tile-acts{display:flex;gap:4px;opacity:0;transition:.2s}
+.section-tile:hover .tile-acts{opacity:1}
+.ta-btn{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:5px 8px;
+  cursor:pointer;font-size:.7rem;color:var(--tx3);transition:.15s}
+.ta-btn:hover{color:var(--tx);border-color:var(--bd2)}
+.tile-name{font-weight:700;font-size:1.05rem;color:var(--tx);line-height:1.2}
+.tile-meta{font-size:.75rem;color:var(--tx2);font-weight:500}
+.tile-bar{height:3px;background:var(--sf3);border-radius:2px}
+.tile-bar-fill{height:100%;border-radius:2px;min-width:6px;transition:width .4s}
+.tile-cats{font-size:.75rem;color:var(--tx2);line-height:1.5}
+.section-tile:nth-child(1) .tile-bar-fill{background:var(--g1)}
+.section-tile:nth-child(2) .tile-bar-fill{background:var(--g2)}
+.section-tile:nth-child(3) .tile-bar-fill{background:var(--g3)}
+.section-tile:nth-child(4) .tile-bar-fill{background:var(--g4)}
+.section-tile:nth-child(5) .tile-bar-fill{background:var(--g5)}
+.section-tile:nth-child(1)::before{background:var(--g1)}
+.section-tile:nth-child(2)::before{background:var(--g2)}
+.section-tile:nth-child(3)::before{background:var(--g3)}
+.section-tile:nth-child(4)::before{background:var(--g4)}
+.section-tile:nth-child(5)::before{background:var(--g5)}
+.section-tile:nth-child(1) .tile-icon-wrap{background:rgba(107,127,163,.18);border-color:rgba(107,127,163,.35)}
+.section-tile:nth-child(2) .tile-icon-wrap{background:rgba(184,103,58,.18);border-color:rgba(184,103,58,.35)}
+.section-tile:nth-child(3) .tile-icon-wrap{background:rgba(45,96,80,.18);border-color:rgba(45,96,80,.35)}
+.section-tile:nth-child(4) .tile-icon-wrap{background:rgba(158,136,120,.18);border-color:rgba(158,136,120,.35)}
+.section-tile:nth-child(5) .tile-icon-wrap{background:rgba(107,127,163,.15);border-color:rgba(107,127,163,.3)}
+.add-tile{border:1.5px dashed var(--bd);border-radius:var(--r);padding:22px 18px;cursor:pointer;
+  transition:.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;min-height:140px;background:none}
+.add-tile:hover{border-color:rgba(107,127,163,.4);background:rgba(107,127,163,.05)}
+.add-tile-icon{font-size:1.6rem;color:var(--tx3)}
+.add-tile-text{font-size:.72rem;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.add-tile:hover .add-tile-icon,.add-tile:hover .add-tile-text{color:var(--blue)}
+
+/* Stylist tile */
+.stylist-tile{
+  background:var(--sf);border:1px solid rgba(160,98,140,.25);border-radius:var(--r);
+  padding:22px 18px 18px;cursor:pointer;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 2px 12px rgba(160,98,140,.1);
+  grid-column:1/-1;
+}
+.stylist-tile::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  border-radius:var(--r) var(--r) 0 0;background:var(--g6);
+}
+.stylist-tile::after{content:'';position:absolute;inset:0;opacity:0;transition:.25s;
+  background:radial-gradient(circle at 30% 20%,rgba(160,98,140,.08),transparent 60%);pointer-events:none}
+.stylist-tile:hover,.stylist-tile:active{transform:scale(.98);border-color:rgba(160,98,140,.4);box-shadow:0 4px 20px rgba(160,98,140,.18)}
+.stylist-tile:hover::after{opacity:1}
+.stylist-tile .tile-icon-wrap{background:rgba(160,98,140,.15);border-color:rgba(160,98,140,.3)}
+.stylist-tile .tile-bar-fill{background:var(--g6)}
+.stylist-tile .st-desc{font-size:.8rem;color:var(--tx2);line-height:1.5}
+
+/* ══ CATEGORIES ══ */
+.cats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cat-tile{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);
+  padding:18px 16px 16px;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;
+  position:relative;display:flex;flex-direction:column;gap:7px;
+  overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.cat-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.cat-tile:nth-child(4n+1)::before{background:var(--g1)}
+.cat-tile:nth-child(4n+2)::before{background:var(--g2)}
+.cat-tile:nth-child(4n+3)::before{background:var(--g3)}
+.cat-tile:nth-child(4n)::before{background:var(--g4)}
+.cat-tile:hover,.cat-tile:active{transform:scale(.97);border-color:var(--bd2);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.ct-icon{font-size:1.8rem;line-height:1}
+.ct-name{font-weight:700;font-size:.95rem;color:var(--tx)}
+.ct-meta{font-size:.74rem;color:var(--tx2);font-weight:500}
+.ct-subs{font-size:.74rem;color:var(--tx2);line-height:1.5}
+.ct-acts{position:absolute;top:10px;right:10px;display:flex;gap:3px;opacity:0;transition:.2s}
+.cat-tile:hover .ct-acts{opacity:1}
+
+/* ══ ITEMS ══ */
+.items-controls-bar{
+  display:flex;gap:6px;align-items:center;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+}
+.items-controls-bar::-webkit-scrollbar{display:none}
+.filters-row{display:flex;gap:5px;align-items:center;flex:1;overflow-x:auto;padding-bottom:2px}
+.filters-row::-webkit-scrollbar{display:none}
+.pill-btn{padding:7px 12px;border:1px solid var(--bd2);background:var(--sf2);
+  cursor:pointer;font-family:var(--font);font-size:.78rem;font-weight:600;
+  color:var(--tx2);border-radius:20px;transition:.2s;white-space:nowrap;flex-shrink:0}
+.pill-btn:hover{color:var(--tx)}
+.pill-btn.active{background:rgba(184,103,58,.15);border-color:rgba(184,103,58,.5);color:#a05020}
+.pill-sep{width:1px;height:18px;background:var(--bd2);flex-shrink:0;margin:0 2px}
+.btn-add{padding:9px 16px;background:var(--g1);color:#fff;border:none;cursor:pointer;
+  font-family:var(--font);font-size:.85rem;font-weight:700;border-radius:20px;
+  transition:.15s;white-space:nowrap;flex-shrink:0}
+.btn-add:hover{opacity:.88}
+.sub-tabs{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:18px;padding-bottom:2px}
+.sub-tabs::-webkit-scrollbar{display:none}
+.sub-tab{padding:7px 14px;border:1px solid var(--bd);background:var(--sf2);cursor:pointer;
+  font-size:.8rem;font-weight:500;color:var(--tx2);border-radius:20px;transition:.2s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
+.sub-tab:hover{border-color:var(--bd2);color:var(--tx)}
+.sub-tab.active{background:rgba(184,103,58,.15);border-color:rgba(184,103,58,.5);color:#a05020;font-weight:600}
+.sub-tab .sc{font-size:.65rem;opacity:.6}
+.sub-tab-add{border-style:dashed;color:var(--tx3)}
+.sub-tab-add:hover{border-color:rgba(107,127,163,.4);color:var(--blue)}
+
+/* ══ CARDS ══ */
+.items-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.item-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);
+  overflow:hidden;animation:cardIn .2s ease both;transition:transform .2s,border-color .2s}
+.item-card:hover{transform:translateY(-2px);border-color:var(--bd2)}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card-photo{width:100%;height:140px;object-fit:cover;display:block;cursor:zoom-in}
+.card-emoji{height:100px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:var(--sf2)}
+.card-pdf{height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;background:var(--sf2);cursor:pointer;transition:.15s;border-bottom:1px solid var(--bd)}
+.card-pdf:hover{background:var(--sf3)}
+.card-pdf-name{font-size:.6rem;color:var(--tx2);max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.card-pdf-hint{font-size:.55rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em}
+.card-body{padding:10px 12px 12px}
+.card-tag{display:inline-block;font-size:.62rem;color:var(--tx2);background:var(--sf2);
+  border:1px solid var(--bd2);border-radius:5px;padding:2px 7px;margin-bottom:6px;font-weight:600}
+.card-name{font-weight:700;font-size:.92rem;line-height:1.3;margin-bottom:4px;color:var(--tx)}
+.card-color-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle;border:1px solid rgba(255,255,255,.2)}
+.card-color{font-size:.74rem;color:var(--tx2);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.card-desc{font-size:.75rem;color:var(--tx2);line-height:1.5;margin-bottom:9px;font-style:italic}
+.card-footer{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.joy-badge{font-size:.58rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 7px;border-radius:6px}
+.j-yes{background:rgba(45,96,80,.14);color:#2d6050;border:1px solid rgba(45,96,80,.3)}
+.j-no{background:rgba(184,103,58,.15);color:#8a4010;border:1px solid rgba(184,103,58,.35)}
+.j-none{background:var(--sf2);color:var(--tx3);border:1px solid var(--bd)}
+.card-actions{display:flex;gap:3px}
+.card-btn{background:none;border:none;cursor:pointer;color:var(--tx3);font-size:.8rem;
+  padding:3px 5px;transition:.2s;border-radius:4px}
+.card-btn:hover{color:var(--tx);background:var(--sf2)}
+.card-btn.del:hover{color:#d4855a;background:rgba(184,103,58,.1)}
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--tx3)}
+.empty .ei{font-size:2.5rem;display:block;margin-bottom:12px;background:linear-gradient(135deg,#6b7fa3,#b8673a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.empty p{font-size:.95rem;color:var(--tx2)}
+.empty small{font-size:.7rem;margin-top:6px;display:block;letter-spacing:.06em;text-transform:uppercase}
+
+/* ══ MODALS ══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:400;
+  align-items:flex-end;justify-content:center}
+.overlay.show{display:flex;animation:ovIn .2s ease}
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--sf);border:1px solid var(--bd2);border-radius:var(--r) var(--r) 0 0;
+  width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+  box-shadow:0 -20px 60px rgba(0,0,0,.5);
+  animation:slideUp .28s cubic-bezier(.34,1.2,.64,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:var(--sf3);border-radius:2px;margin:12px auto 0}
+.mhead{padding:18px 22px 14px;border-bottom:1px solid var(--bd)}
+.mhead h2{font-weight:800;font-size:1.15rem;letter-spacing:-.01em}
+.mbody{padding:18px 22px}
+.mrow{margin-bottom:14px}
+.mrow label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tx3);margin-bottom:7px}
+.mrow input[type=text],.mrow select,.mrow textarea{
+  width:100%;background:var(--sf2);border:1px solid var(--bd2);padding:12px 14px;
+  font-family:var(--font);font-size:.95rem;color:var(--tx);border-radius:10px;outline:none;transition:.2s}
+.mrow input:focus,.mrow select:focus,.mrow textarea:focus{border-color:rgba(107,127,163,.5);box-shadow:0 0 0 3px rgba(107,127,163,.1)}
+.mrow textarea{resize:none;height:70px;font-size:.88rem;color:var(--tx2)}
+.mrow select{color:var(--tx2)}
+.mrow input::placeholder,.mrow textarea::placeholder{color:var(--tx3)}
+.mfoot{padding:0 22px 32px;display:flex;gap:8px}
+.btn-cancel{flex:1;padding:13px;border:1px solid var(--bd2);background:var(--sf2);
+  cursor:pointer;font-family:var(--font);font-size:.9rem;color:var(--tx2);
+  border-radius:10px;transition:.2s;font-weight:600}
+.btn-cancel:hover{color:var(--tx)}
+.btn-save{flex:2;padding:13px;background:var(--g1);color:#fff;border:none;cursor:pointer;
+  font-family:var(--font);font-size:.95rem;font-weight:800;border-radius:10px;transition:.15s}
+.btn-save:hover{opacity:.88}
+.btn-danger{flex:2;padding:13px;background:rgba(184,103,58,.15);color:#d4855a;
+  border:1px solid rgba(184,103,58,.3);cursor:pointer;font-family:var(--font);
+  font-size:.9rem;font-weight:700;border-radius:10px;transition:.15s}
+.btn-danger:hover{background:rgba(184,103,58,.25)}
+
+/* Joy btns */
+.joy-row{display:flex;gap:6px}
+.jbtn{flex:1;padding:10px 4px;border:1px solid var(--bd2);background:var(--sf2);
+  cursor:pointer;font-size:.72rem;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--tx2);border-radius:10px;transition:.2s}
+.jbtn.ay{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.3);color:#34d399}
+.jbtn.an{background:rgba(184,103,58,.12);border-color:rgba(184,103,58,.3);color:#d4855a}
+
+/* Photo zone */
+.pzone{border:1.5px dashed var(--bd2);border-radius:10px;cursor:pointer;
+  transition:.2s;background:var(--sf2);position:relative;overflow:hidden}
+.pzone:hover{border-color:rgba(107,127,163,.4)}
+.pzone.drag{border-color:var(--blue);background:rgba(107,127,163,.08)}
+.pzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;width:100%;height:100%}
+.pzph{padding:22px;text-align:center;pointer-events:none}
+.pzph span{display:block;font-size:1.5rem;margin-bottom:5px}
+.pzph p{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.pzprev{display:none;position:relative}
+.pzprev img{width:100%;height:130px;object-fit:cover;display:block}
+.pzrm{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;
+  border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.75rem;
+  display:flex;align-items:center;justify-content:center;z-index:3;transition:.15s}
+.pzrm:hover{background:rgba(244,63,94,.8)}
+
+/* Color picker */
+.color-picker-wrap{display:flex;align-items:center;gap:10px}
+.color-swatch{width:40px;height:40px;border-radius:8px;border:2px solid var(--bd2);
+  cursor:pointer;overflow:hidden;flex-shrink:0;position:relative}
+.color-swatch input[type=color]{position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);
+  border:none;cursor:pointer;opacity:0}
+.color-swatch-preview{width:100%;height:100%;border-radius:6px}
+.color-presets{display:flex;gap:5px;flex-wrap:wrap;padding:4px 0}
+.cp{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent;
+  transition:.15s;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.cp:hover{transform:scale(1.12);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.cp.sel{border-color:#333;transform:scale(1.08);box-shadow:0 0 0 3px rgba(0,0,0,.15)}
+.brand-input{flex:1}
+
+/* Emoji grid */
+.egrid{display:flex;flex-wrap:wrap;gap:4px;max-height:130px;overflow-y:auto}
+.ep{width:36px;height:36px;border:1px solid transparent;background:none;cursor:pointer;
+  font-size:1.15rem;border-radius:7px;transition:.1s;display:flex;align-items:center;justify-content:center}
+.ep:hover{background:var(--sf3);border-color:var(--bd2)}
+.ep.sel{background:rgba(107,127,163,.15);border-color:rgba(107,127,163,.4)}
+
+/* Lightbox */
+#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:600;
+  align-items:center;justify-content:center;flex-direction:column;gap:12px;backdrop-filter:blur(20px)}
+#lb.show{display:flex}
+#lb img{max-width:92vw;max-height:80vh;object-fit:contain;border-radius:var(--r)}
+#lb p{color:rgba(255,255,255,.4);font-size:.82rem}
+#lbx{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.7);font-size:1rem;cursor:pointer;width:36px;height:36px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.15s}
+#lbx:hover{background:rgba(255,255,255,.2);color:#fff}
+
+/* ══ DONATE SCREEN ══ */
+.donate-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:10px;flex-wrap:wrap}
+.donate-header h2{font-size:1.5rem;font-weight:800;color:var(--tx)}
+.donate-header h2 span{background:var(--g4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.donate-empty{text-align:center;padding:60px 20px;color:var(--tx3)}
+.donate-empty .ei{font-size:2.5rem;display:block;margin-bottom:12px}
+.donate-empty p{font-size:.95rem;color:var(--tx2)}
+.donate-list{display:flex;flex-direction:column;gap:10px}
+.donate-item{
+  background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+}
+.donate-item-color{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+.donate-item-info{flex:1;min-width:0}
+.donate-item-name{font-weight:700;font-size:.95rem;color:var(--tx);line-height:1.2}
+.donate-item-meta{font-size:.75rem;color:var(--tx2);margin-top:3px}
+.donate-item-actions{display:flex;gap:6px;flex-shrink:0}
+.donate-keep{padding:6px 12px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);
+  color:#34d399;border-radius:20px;cursor:pointer;font-size:.75rem;font-weight:700;
+  font-family:var(--font);transition:.15s;white-space:nowrap}
+.donate-keep:hover{background:rgba(52,211,153,.22)}
+.donate-section-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);padding:8px 4px 4px;margin-top:6px}
+
+
+/* ══ WISHLIST ══ */
+.wish-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:1.4rem;line-height:1;padding:4px 6px;
+  transition:.2s;color:var(--tx3);flex-shrink:0;
+}
+.wish-btn:hover{color:#e8409a;transform:scale(1.15)}
+.wish-btn.has-items{color:#e8409a}
+
+.wish-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:10px}
+.wish-header h2{font-size:1.5rem;font-weight:800;color:var(--tx)}
+.wish-header h2 span{background:linear-gradient(135deg,#e8409a,#b066ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.wish-filters{display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px}
+.wish-filters::-webkit-scrollbar{display:none}
+.wf-btn{padding:7px 14px;border:1px solid var(--bd2);background:var(--sf2);
+  cursor:pointer;font-family:var(--font);font-size:.78rem;font-weight:600;
+  color:var(--tx2);border-radius:20px;transition:.2s;white-space:nowrap;flex-shrink:0}
+.wf-btn.active{background:rgba(232,64,154,.15);border-color:rgba(232,64,154,.5);color:#b0206a}
+
+.wish-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wish-card{
+  background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);
+  overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);position:relative;
+}
+.wish-card:hover{transform:translateY(-2px);border-color:var(--bd2);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.wish-card-top{position:relative}
+.wish-photo{width:100%;height:130px;object-fit:cover;display:block}
+.wish-emoji{height:100px;display:flex;align-items:center;justify-content:center;
+  font-size:2.4rem;background:linear-gradient(135deg,rgba(232,64,154,.08),rgba(176,102,255,.08))}
+.wish-priority{
+  position:absolute;top:8px;left:8px;
+  padding:3px 9px;border-radius:20px;font-size:.62rem;font-weight:800;
+  letter-spacing:.05em;text-transform:uppercase;
+}
+.wp-dream{background:linear-gradient(135deg,#e8409a,#b066ff);color:#fff}
+.wp-want{background:rgba(107,127,163,.2);border:1px solid rgba(107,127,163,.4);color:#3a5080}
+.wish-actions-top{position:absolute;top:6px;right:6px;display:flex;gap:4px}
+.wish-card-body{padding:10px 12px 12px}
+.wish-name{font-weight:700;font-size:.92rem;line-height:1.3;margin-bottom:4px;color:var(--tx)}
+.wish-brand{font-size:.75rem;color:var(--tx2);margin-bottom:4px}
+.wish-price{font-size:.85rem;font-weight:700;color:#b8673a;margin-bottom:6px}
+.wish-footer{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px}
+.wish-link-btn{
+  font-size:.7rem;font-weight:700;color:var(--blue);text-decoration:none;
+  padding:4px 10px;border:1px solid rgba(107,127,163,.3);border-radius:20px;
+  background:rgba(107,127,163,.08);transition:.15s;display:flex;align-items:center;gap:4px;
+}
+.wish-link-btn:hover{background:rgba(107,127,163,.16)}
+.wish-bought-btn{
+  font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:20px;cursor:pointer;
+  border:1px solid rgba(45,96,80,.3);background:rgba(45,96,80,.08);color:#2d6050;
+  font-family:var(--font);transition:.15s;
+}
+.wish-bought-btn:hover{background:rgba(45,96,80,.16)}
+.wish-empty{grid-column:1/-1;text-align:center;padding:60px 20px}
+.wish-empty .ei{font-size:2.5rem;display:block;margin-bottom:12px}
+.wish-empty p{font-size:.95rem;color:var(--tx2)}
+.wish-empty small{font-size:.7rem;color:var(--tx3);margin-top:6px;display:block;
+  text-transform:uppercase;letter-spacing:.06em}
+
+
+/* ══ SEARCH ══ */
+.search-wrap{
+  padding:10px 16px 8px;
+  background:rgba(250,246,240,.97);
+  border-bottom:1px solid var(--bd);
+  position:sticky;top:calc(56px + env(safe-area-inset-top));z-index:190;
+}
+.search-input-wrap{position:relative}
+.search-input{
+  width:100%;padding:10px 36px 10px 38px;
+  background:var(--sf2);border:1.5px solid var(--bd2);border-radius:24px;
+  font-family:var(--font);font-size:.9rem;color:var(--tx);outline:none;transition:.2s;
+}
+.search-input:focus{border-color:rgba(107,127,163,.5);box-shadow:0 0 0 3px rgba(107,127,163,.1);}
+.search-input::placeholder{color:var(--tx3)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none;color:var(--tx3)}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:var(--sf3);border:none;border-radius:50%;width:20px;height:20px;
+  cursor:pointer;font-size:.6rem;color:var(--tx2);display:none;align-items:center;justify-content:center;}
+.search-clear.vis{display:flex}
+.search-results{padding:16px 18px 40px}
+.search-results-header{font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tx3);margin-bottom:12px}
+.search-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ══ SORT MODE ══ */
+.sort-btn{
+  padding:7px 14px;background:var(--g2);color:#fff;border:none;
+  cursor:pointer;font-family:var(--font);font-size:.82rem;font-weight:700;
+  border-radius:20px;transition:.15s;white-space:nowrap;flex-shrink:0;
+}
+.sort-btn:hover{opacity:.88}
+
+/* ══ РАЗБОР (SORT MODE OVERLAY) ══ */
+#sort-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:var(--bg);flex-direction:column;
+}
+#sort-overlay.show{display:flex}
+.sort-topbar{
+  padding:env(safe-area-inset-top) 18px 0;
+  background:rgba(250,246,240,.97);border-bottom:1px solid var(--bd);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  flex-shrink:0;
+}
+.sort-topbar-inner{height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sort-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--tx2);padding:4px}
+.sort-progress-wrap{flex:1;padding:0 4px}
+.sort-progress-label{font-size:.72rem;color:var(--tx3);text-align:center;margin-bottom:4px}
+.sort-progress-bar{height:4px;background:var(--sf3);border-radius:2px;overflow:hidden}
+.sort-progress-fill{height:100%;background:var(--g2);border-radius:2px;transition:width .3s}
+.sort-card-area{flex:1;display:flex;align-items:center;justify-content:center;padding:20px 24px;overflow:hidden}
+.sort-card{
+  background:var(--sf);border:1px solid var(--bd);border-radius:24px;
+  width:100%;max-width:360px;overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.12);
+  transition:transform .25s,opacity .25s;
+  position:relative;
+}
+.sort-card-photo{width:100%;height:260px;object-fit:cover;display:block}
+.sort-card-emoji{height:200px;display:flex;align-items:center;justify-content:center;
+  font-size:5rem;background:linear-gradient(135deg,rgba(107,127,163,.08),rgba(184,103,58,.06))}
+.sort-card-body{padding:18px 20px 20px}
+.sort-card-name{font-size:1.3rem;font-weight:800;color:var(--tx);margin-bottom:4px}
+.sort-card-meta{font-size:.82rem;color:var(--tx2)}
+.sort-card-tag{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;
+  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.sort-actions{
+  padding:16px 24px calc(24px + env(safe-area-inset-bottom));
+  display:flex;gap:12px;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.sort-act-btn{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  cursor:pointer;border:none;background:none;font-family:var(--font);
+  transition:transform .15s;
+}
+.sort-act-btn:hover{transform:scale(1.08)}
+.sort-act-icon{
+  width:60px;height:60px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:1.5rem;border:2px solid transparent;
+  box-shadow:0 4px 16px rgba(0,0,0,.1);transition:.15s;
+}
+.sort-act-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3)}
+.sa-yes .sort-act-icon{background:rgba(45,96,80,.12);border-color:rgba(45,96,80,.3);color:#2d6050}
+.sa-no .sort-act-icon{background:rgba(184,103,58,.12);border-color:rgba(184,103,58,.3)}
+.sa-maybe .sort-act-icon{background:rgba(107,127,163,.12);border-color:rgba(107,127,163,.3)}
+.sa-yes:hover .sort-act-icon{background:rgba(45,96,80,.25);transform:scale(1.1)}
+.sa-no:hover .sort-act-icon{background:rgba(184,103,58,.22);transform:scale(1.1)}
+.sa-maybe:hover .sort-act-icon{background:rgba(107,127,163,.22);transform:scale(1.1)}
+.sort-done{text-align:center;padding:40px 24px;display:none}
+.sort-done.show{display:block}
+.sort-done-emoji{font-size:3rem;display:block;margin-bottom:16px}
+.sort-done h3{font-size:1.4rem;font-weight:800;color:var(--tx);margin-bottom:8px}
+.sort-done p{font-size:.88rem;color:var(--tx2);line-height:1.6}
+
+/* ══ СТАТИСТИКА ══ */
+.stats-screen-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.stats-screen-header h2{font-size:1.5rem;font-weight:800;color:var(--tx)}
+.stats-screen-header h2 span{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stats-big-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.stats-big-chip{
+  background:var(--sf);border:1px solid var(--bd);border-radius:16px;
+  padding:16px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.stats-big-num{font-size:2rem;font-weight:800;line-height:1}
+.stats-big-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-top:4px;font-weight:600}
+.stats-section{margin-bottom:28px}
+.stats-section-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tx3);margin-bottom:12px}
+.stats-bar-row{margin-bottom:10px}
+.stats-bar-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.stats-bar-name{font-size:.85rem;font-weight:600;color:var(--tx)}
+.stats-bar-count{font-size:.75rem;color:var(--tx2)}
+.stats-bar-track{height:8px;background:var(--sf3);border-radius:4px;overflow:hidden}
+.stats-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.stats-joy-row{display:flex;gap:8px;margin-bottom:24px}
+.stats-joy-chip{
+  flex:1;padding:14px 8px;border-radius:14px;text-align:center;
+  border:1px solid var(--bd);
+}
+.stats-joy-num{font-size:1.6rem;font-weight:800;line-height:1}
+.stats-joy-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:600}
+.sjc-yes{background:rgba(45,96,80,.1);border-color:rgba(45,96,80,.25)}
+.sjc-yes .stats-joy-num,.sjc-yes .stats-joy-label{color:#2d6050}
+.sjc-no{background:rgba(184,103,58,.1);border-color:rgba(184,103,58,.25)}
+.sjc-no .stats-joy-num,.sjc-no .stats-joy-label{color:#a05030}
+.sjc-maybe{background:rgba(107,127,163,.1);border-color:rgba(107,127,163,.25)}
+.sjc-maybe .stats-joy-num,.sjc-maybe .stats-joy-label{color:#4a5f80}
+.sjc-none{background:var(--sf2);border-color:var(--bd)}
+.sjc-none .stats-joy-num,.sjc-none .stats-joy-label{color:var(--tx3)}
+
+@media(min-width:600px){
+  .screen{padding:32px 28px 50px}
+  .sections-grid,.cats-grid,.items-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .topbar{padding:0 28px}
+  .stats-row{display:flex}
+}
+@media(max-width:599px){
+  .stats-row{display:none}
+  .home-hero h2{font-size:2.2rem}
+  .brand-name{display:none}
+  .page-title{max-width:120px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <button class="back-btn" id="back-btn" onclick="goBack()">Назад</button>
+    <button class="wish-btn" onclick="toggleSearch()" title="Поиск" style="font-size:1.1rem">🔍</button>
+    <button class="wish-btn" id="wish-btn" onclick="openWishlist()" title="Вишлист">♡</button>
+    <button class="wish-btn" onclick="openStats()" title="Статистика" style="font-size:1.1rem">📊</button>
+    <div class="brand" onclick="goHome()">
+      <div class="brand-logo">✦</div>
+      <div class="brand-name">Spark</div>
+    </div>
+    <div class="topbar-center"><div class="page-title" id="page-title"></div></div>
+    <div class="topbar-right">
+      <div class="stats-row">
+        <div class="stat-chip"><strong id="st-total">0</strong> вещей</div>
+        <div class="stat-chip">✨ <strong id="st-joy">0</strong></div>
+        <div class="stat-chip btn-donate-chip" onclick="openDonate()" style="cursor:pointer;border-color:rgba(184,103,58,.3);color:#c87848">🗑 <strong id="st-out">0</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH BAR -->
+<div class="search-wrap" id="search-wrap" style="display:none">
+  <div class="search-input-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="search-input" type="search" placeholder="Поиск по вещам..." oninput="onSearch(this.value)">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+<div class="search-results" id="search-results" style="display:none">
+  <div class="search-results-header" id="search-results-header"></div>
+  <div class="search-grid" id="search-grid"></div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="home-hero">
+    <h2>Что <span class="grad">разбираем</span><br>сегодня?</h2>
+    <p>Метод КонМари · оставляй только то, что дарит радость</p>
+  </div>
+  <div class="sections-grid" id="sections-grid"></div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="screen" id="screen-cats">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:10px;flex-wrap:wrap">
+    <div style="font-size:1.6rem;font-weight:800;color:#fff" id="cats-title"></div>
+    <button class="btn-add" onclick="openCatModal()">+ Категория</button>
+  </div>
+  <div class="cats-grid" id="cats-grid"></div>
+</div>
+
+<!-- ITEMS -->
+<div class="screen" id="screen-items">
+  <div class="items-controls-bar">
+    <div class="filters-row">
+      <button class="pill-btn active" onclick="setJoyFilter('all')" id="jf-all">Все</button>
+      <button class="pill-btn" onclick="setJoyFilter('yes')" id="jf-yes">✨</button>
+      <button class="pill-btn" onclick="setJoyFilter('no')" id="jf-no">🗑</button>
+      <button class="pill-btn" onclick="setJoyFilter('maybe')" id="jf-maybe">🤔</button>
+      <div class="pill-sep"></div>
+      <button class="pill-btn active" onclick="setSort('newest')" id="sort-newest">Новые</button>
+      <button class="pill-btn" onclick="setSort('name')" id="sort-name">А→Я</button>
+    </div>
+    <button class="sort-btn" onclick="startSortMode()" title="Режим разбора">📦</button>
+    <button class="btn-add" onclick="openItemModal()">+ Добавить</button>
+  </div>
+  <div class="sub-tabs" id="sub-tabs"></div>
+  <div class="items-grid" id="items-grid"></div>
+</div>
+
+<!-- СТАТИСТИКА -->
+<div class="screen" id="screen-stats">
+  <div class="stats-screen-header">
+    <h2>📊 <span>Статистика</span></h2>
+  </div>
+  <div id="stats-content"></div>
+</div>
+
+<!-- DONATE / УБРАТЬ -->
+<div class="screen" id="screen-donate">
+  <div class="donate-header">
+    <h2>🗑 Список <span>«Убрать»</span></h2>
+    <button class="btn-add" onclick="exportDonate()" style="background:var(--g4);font-size:.8rem;padding:8px 14px">↗ Экспорт</button>
+  </div>
+  <div id="donate-content"></div>
+</div>
+
+<!-- WISHLIST -->
+<div class="screen" id="screen-wish">
+  <div class="wish-header">
+    <h2>♡ <span>Вишлист</span></h2>
+    <button class="btn-add" onclick="openWishModal()">+ Добавить</button>
+  </div>
+  <div class="wish-filters">
+    <button class="wf-btn active" id="wf-all" onclick="setWishFilter('all')">Все</button>
+    <button class="wf-btn" id="wf-dream" onclick="setWishFilter('dream')">✨ Мечтаю</button>
+    <button class="wf-btn" id="wf-want" onclick="setWishFilter('want')">🛍 Хочу</button>
+  </div>
+  <div class="wish-grid" id="wish-grid"></div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<!-- Wishlist add/edit -->
+<div class="overlay" id="ov-wish">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2 id="wm-h">Добавить в вишлист</h2></div>
+    <div class="mbody">
+      <div class="mrow"><label>Название *</label><input type="text" id="wm-name" placeholder="Напр. Пальто Max Mara"></div>
+      <div class="mrow"><label>Бренд</label><input type="text" id="wm-brand" placeholder="Напр. Zara, Mango..."></div>
+      <div class="mrow">
+        <label>Приоритет</label>
+        <div class="joy-row">
+          <button class="jbtn" id="wb-dream" onclick="setWishPriority('dream')">✨ Мечтаю</button>
+          <button class="jbtn" id="wb-want" onclick="setWishPriority('want')">🛍 Хочу</button>
+        </div>
+      </div>
+      <div class="mrow"><label>Цена</label><input type="text" id="wm-price" placeholder="Напр. 5 990 ₽"></div>
+      <div class="mrow"><label>Ссылка на магазин</label><input type="text" id="wm-link" placeholder="https://..."></div>
+      <div class="mrow">
+        <label>Фото</label>
+        <div class="pzone" id="pz-wish" ondragover="pzDrag(event,true)" ondragleave="pzDrag(event,false)" ondrop="pzDropWish(event)">
+          <input type="file" accept="image/*" id="pz-wish-input" onchange="pzSelectWish(event)">
+          <div class="pzph" id="pzph-wish"><span>📎</span><p>Фото · нажми или перетащи</p></div>
+          <div class="pzprev" id="pzprev-wish">
+            <img id="pzimg-wish" src="" alt="">
+            <button class="pzrm" onclick="pzRmWish(event)">✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="mrow"><label>Заметки</label><textarea id="wm-desc" placeholder="Размер, цвет, повод..."></textarea></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-wish')">Отмена</button>
+      <button class="btn-save" id="wm-save-btn" onclick="saveWish()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Section -->
+<div class="overlay" id="ov-section">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2 id="sm-h">Новый раздел</h2></div>
+    <div class="mbody">
+      <div class="mrow"><label>Название</label><input type="text" id="sm-name" placeholder="Одежда, Документы..."></div>
+      <div class="mrow"><label>Иконка</label><div class="egrid" id="sm-egrid"></div></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-section')">Отмена</button>
+      <button class="btn-save" onclick="saveSection()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category -->
+<div class="overlay" id="ov-cat">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2 id="cm-h">Новая категория</h2></div>
+    <div class="mbody">
+      <div class="mrow"><label>Название</label><input type="text" id="cm-name" placeholder="Верхняя одежда..."></div>
+      <div class="mrow"><label>Иконка</label><div class="egrid" id="cm-egrid"></div></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-cat')">Отмена</button>
+      <button class="btn-save" onclick="saveCat()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subcategory -->
+<div class="overlay" id="ov-sub">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2>Подкатегория</h2></div>
+    <div class="mbody">
+      <div class="mrow"><label>Название</label><input type="text" id="sbm-name" placeholder="Зима, Лето..."></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-sub')">Отмена</button>
+      <button class="btn-save" onclick="saveSub()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item add/edit -->
+<div class="overlay" id="ov-item">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2 id="im-h">Добавить вещь</h2></div>
+    <div class="mbody">
+      <div class="mrow"><label>Название *</label><input type="text" id="im-name" placeholder="Напр. Белая рубашка H&M"></div>
+      <div class="mrow"><label>Подкатегория</label><select id="im-sub"></select></div>
+      <div class="mrow">
+        <label>Фото или PDF</label>
+        <div class="pzone" id="pz" ondragover="pzDrag(event,true)" ondragleave="pzDrag(event,false)" ondrop="pzDrop(event)">
+          <input type="file" accept="image/*,application/pdf" id="pz-input" onchange="pzSelect(event)">
+          <div class="pzph" id="pzph"><span>📎</span><p>Фото или PDF · нажми или перетащи</p></div>
+          <div class="pzprev" id="pzprev">
+            <img id="pzimg" src="" alt="">
+            <div id="pzpdf" style="display:none;padding:16px 14px;align-items:center;gap:12px;background:var(--sf2)">
+              <span style="font-size:2rem">📄</span>
+              <div>
+                <div id="pzpdf-name" style="font-size:.88rem;font-weight:600;color:var(--tx)"></div>
+                <div style="font-size:.6rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px">PDF документ</div>
+              </div>
+            </div>
+            <button class="pzrm" onclick="pzRm(event)">✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="mrow">
+        <label>Цвет</label>
+        <div class="color-picker-wrap">
+          <div class="color-swatch" id="color-swatch-wrap">
+            <div class="color-swatch-preview" id="color-preview" style="background:#6366f1"></div>
+            <input type="color" id="im-color-picker" value="#6366f1" oninput="onColorPick(this.value)">
+          </div>
+          <div>
+            <div class="color-presets" id="color-presets"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mrow"><label>Бренд</label><input type="text" id="im-brand" placeholder="Напр. Zara, H&M..."></div>
+      <div class="mrow"><label>Заметки</label><textarea id="im-desc" placeholder="Любые заметки..."></textarea></div>
+      <div class="mrow">
+        <label>Приносит радость?</label>
+        <div class="joy-row">
+          <button class="jbtn" id="jb-yes" onclick="setJoy('yes')">✨ Да</button>
+          <button class="jbtn" id="jb-no" onclick="setJoy('no')">🗑 Нет</button>
+          <button class="jbtn" id="jb-maybe" onclick="setJoy('maybe')">🤔 Позже</button>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-item')">Отмена</button>
+      <button class="btn-save" id="im-save-btn" onclick="saveItem()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete -->
+<div class="overlay" id="ov-del">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2>Отпустить вещь</h2></div>
+    <div class="mbody"><p style="font-size:.88rem;color:var(--tx2);line-height:1.7" id="del-text"></p></div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-del')">Оставить</button>
+      <button class="btn-danger" onclick="confirmDel()">🙏 Отпустить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename -->
+<div class="overlay" id="ov-rename">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhead"><h2 id="rn-h">Переименовать</h2></div>
+    <div class="mbody">
+      <div class="mrow"><label>Название</label><input type="text" id="rn-name"></div>
+      <div id="rn-emoji-wrap" style="display:none" class="mrow"><label>Иконка</label><div class="egrid" id="rn-egrid"></div></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeOv('ov-rename')">Отмена</button>
+      <button class="btn-save" onclick="confirmRename()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lb" onclick="lbClose()">
+  <button id="lbx" onclick="lbClose()">✕</button>
+  <img id="lbimg" src="" alt="">
+  <p id="lbcap"></p>
+</div>
+
+<script>
+const SK='konmari_v4';
+const COLORS=[
+  // Белые / серые / чёрные
+  '#ffffff','#f0f0f0','#d0d0d0','#a0a0a0','#606060','#303030','#000000',
+  // Бежевые и песочные
+  '#fdf6ee','#f5e6d0','#e8c89a','#d4a870','#c8b49a','#a08060','#7a6040',
+  // Терракота / кирпич / коричневые
+  '#f0c0a0','#d4855a','#b8673a','#a05030','#7a3820','#5a2a10',
+  // Жёлтые и золотые
+  '#fff8c0','#ffe066','#f5c400','#d4a000','#a07800','#705000',
+  // Оранжевые
+  '#ffe0b0','#ffb347','#f08020','#c06010','#904010','#602000',
+  // Красные
+  '#ffd0d0','#ff9090','#e85050','#c02020','#900000','#5a0000',
+  // Розовые
+  '#ffe0f0','#ffb3d9','#ff80bf','#e8409a','#c0207a','#800060',
+  // Фиолетовые
+  '#f0e0ff','#d4a8ff','#b066ff','#8833ee','#6010c0','#3a0080',
+  // Синие
+  '#e0eeff','#a0c8ff','#6090e8','#3060c0','#1a3a90','#0a1a60',
+  // Голубые и бирюзовые
+  '#c0f0ff','#70d8ff','#20b0e8','#0080c0','#005890','#003060',
+  // Зелёные
+  '#c8f0c8','#80d880','#40b840','#209020','#106010','#083808',
+  // Оливковые и хаки
+  '#e8ecc0','#c8d470','#a0b030','#788020','#506010','#304010',
+  // Тауп / серо-коричневые
+  '#e8e4e0','#d0c8c0','#b0a898','#908880','#706860','#504840',
+]
+const EMOJIS=['👗','👚','👔','👖','🧥','🧤','🧣','🧶','👠','👟','🥿','👜','💍','🕶','🧢','💄','🧴','🪥','🌸','💅','🧼','🪞','🪮','📄','📋','📁','🗂','📑','📝','🎓','🔑','🏠','🛋','🛁','🪴','🍳','📚','🎮','🎸','🏋️','⚽','🚗','✈️','💎','🌿','🌙','⭐','🔮','🪬','📦','🪪','💳','🏥'];
+
+const DEFAULT={
+  sections:[
+    {id:'s-clothes',name:'Одежда',icon:'👗'},
+    {id:'s-shoes',name:'Обувь',icon:'👠'},
+    {id:'s-acc',name:'Аксессуары',icon:'💍'},
+    {id:'s-beauty',name:'Косметика и уход',icon:'💄'},
+    {id:'s-docs',name:'Документы',icon:'📄'},
+  ],
+  cats:[
+    {id:'c-outer',sId:'s-clothes',name:'Верхняя одежда',icon:'🧥'},
+    {id:'c-knit',sId:'s-clothes',name:'Свитеры и кардиганы',icon:'🧶'},
+    {id:'c-jacket',sId:'s-clothes',name:'Пиджаки и жакеты',icon:'🪡'},
+    {id:'c-dress',sId:'s-clothes',name:'Платья и юбки',icon:'👗'},
+    {id:'c-pants',sId:'s-clothes',name:'Брюки и джинсы',icon:'👖'},
+    {id:'c-shirts',sId:'s-clothes',name:'Рубашки и блузы',icon:'👔'},
+    {id:'c-tops',sId:'s-clothes',name:'Топы и футболки',icon:'👚'},
+    {id:'c-under',sId:'s-clothes',name:'Нижнее бельё',icon:'🩱'},
+    {id:'c-socks',sId:'s-clothes',name:'Носки и колготки',icon:'🧦'},
+    {id:'c-sport',sId:'s-clothes',name:'Спортивная одежда',icon:'🏋️'},
+    {id:'c-home',sId:'s-clothes',name:'Домашняя одежда',icon:'🛋️'},
+    {id:'c-casual',sId:'s-shoes',name:'Повседневная',icon:'👟'},
+    {id:'c-formal',sId:'s-shoes',name:'Парадная',icon:'👠'},
+    {id:'c-sporty',sId:'s-shoes',name:'Спортивная',icon:'🏃'},
+    {id:'c-home2',sId:'s-shoes',name:'Домашняя',icon:'🩴'},
+    {id:'c-season',sId:'s-shoes',name:'Сезонная',icon:'🥾'},
+    {id:'c-bags',sId:'s-acc',name:'Сумки',icon:'👜'},
+    {id:'c-jewel',sId:'s-acc',name:'Украшения',icon:'💍'},
+    {id:'c-belts',sId:'s-acc',name:'Ремни и шарфы',icon:'🧣'},
+    {id:'c-hats',sId:'s-acc',name:'Головные уборы',icon:'🧢'},
+    {id:'c-glasses',sId:'s-acc',name:'Очки',icon:'🕶'},
+    {id:'c-face',sId:'s-beauty',name:'Уход за лицом',icon:'🧴'},
+    {id:'c-makeup',sId:'s-beauty',name:'Макияж',icon:'💄'},
+    {id:'c-perf',sId:'s-beauty',name:'Парфюмерия',icon:'🌸'},
+    {id:'c-body',sId:'s-beauty',name:'Уход за телом',icon:'🛁'},
+    {id:'c-hair',sId:'s-beauty',name:'Уход за волосами',icon:'💆'},
+    {id:'c-nails',sId:'s-beauty',name:'Маникюр',icon:'💅'},
+    {id:'c-personal',sId:'s-docs',name:'Личные документы',icon:'🪪'},
+    {id:'c-finance',sId:'s-docs',name:'Финансы',icon:'💳'},
+    {id:'c-medical',sId:'s-docs',name:'Медицина',icon:'🏥'},
+    {id:'c-property',sId:'s-docs',name:'Недвижимость',icon:'🏠'},
+    {id:'c-edu',sId:'s-docs',name:'Образование',icon:'🎓'},
+    {id:'c-insure',sId:'s-docs',name:'Страховки',icon:'📋'},
+  ],
+  subs:[
+    {id:'sb-coat',cId:'c-outer',name:'Пальто'},{id:'sb-jacket',cId:'c-outer',name:'Куртки'},
+    {id:'sb-fur',cId:'c-outer',name:'Дублёнки'},{id:'sb-dresses',cId:'c-dress',name:'Платья'},
+    {id:'sb-skirts',cId:'c-dress',name:'Юбки'},{id:'sb-jeans',cId:'c-pants',name:'Джинсы'},
+    {id:'sb-trousers',cId:'c-pants',name:'Брюки'},{id:'sb-shorts',cId:'c-pants',name:'Шорты'},
+    {id:'sb-cleanse',cId:'c-face',name:'Очищение'},{id:'sb-toners',cId:'c-face',name:'Тонеры и эссенции'},
+    {id:'sb-serums',cId:'c-face',name:'Сыворотки'},{id:'sb-moist',cId:'c-face',name:'Увлажнение'},
+    {id:'sb-spf',cId:'c-face',name:'Солнцезащита'},{id:'sb-masks',cId:'c-face',name:'Маски'},
+    {id:'sb-passport',cId:'c-personal',name:'Паспорта'},{id:'sb-visas',cId:'c-personal',name:'Визы'},
+    {id:'sb-rnzh',cId:'c-personal',name:'ВНЖ / ПМЖ'},
+  ],
+  items:[]
+};
+
+let D=JSON.parse(localStorage.getItem(SK)||'null')||DEFAULT;
+const save=()=>{try{localStorage.setItem(SK,JSON.stringify(D))}catch(e){alert('Мало места')}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+
+// State
+let curSection=null,curCat=null,curSub=null,joyFilter='all',sortMode='newest';
+let curPhoto=null,joyVal=null,delId=null,editItemId=null;
+let smEmoji='📦',cmEmoji='📦',rnEmoji='📦';
+let curFileType=null,curFileName=null,curColor='#6366f1';
+
+// Color presets
+function renderColorPresets(){
+  document.getElementById('color-presets').innerHTML=COLORS.map(c=>
+    `<div class="cp${c===curColor?' sel':''}" style="background:${c};${c==='#fff'?'border:1px solid rgba(255,255,255,.3)':''}" onclick="onColorPick('${c}')"></div>`
+  ).join('');
+}
+function onColorPick(c){
+  curColor=c;
+  document.getElementById('color-preview').style.background=c;
+  document.getElementById('im-color-picker').value=c.length===7?c:'#888888';
+  renderColorPresets();
+}
+
+// Nav
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');}
+function setTopbar(title,showBack){
+  document.getElementById('page-title').textContent=title||'';
+  const bb=document.getElementById('back-btn');
+  bb.classList.toggle('vis',!!showBack);
+}
+function goHome(){
+  curSection=null;curCat=null;curSub=null;joyFilter='all';sortMode='newest';
+  renderHome();showScreen('home');setTopbar('',false);
+  resetFilters();
+}
+
+
+// ══════════════════════════════════════════
+// 🔍 ПОИСК
+// ══════════════════════════════════════════
+let searchActive = false;
+
+function toggleSearch(){
+  searchActive = !searchActive;
+  const wrap = document.getElementById('search-wrap');
+  const res = document.getElementById('search-results');
+  if(searchActive){
+    wrap.style.display = 'block';
+    setTimeout(()=>document.getElementById('search-input').focus(), 100);
+  } else {
+    clearSearch();
+    wrap.style.display = 'none';
+    res.style.display = 'none';
+  }
+}
+
+function onSearch(q){
+  const clear = document.getElementById('search-clear');
+  clear.classList.toggle('vis', q.length > 0);
+  if(!q.trim()){
+    document.getElementById('search-results').style.display='none';
+    return;
+  }
+  const ql = q.toLowerCase();
+  const results = D.items.filter(i =>
+    (i.name||'').toLowerCase().includes(ql) ||
+    (i.brand||'').toLowerCase().includes(ql) ||
+    (i.desc||'').toLowerCase().includes(ql)
+  );
+  const hdr = document.getElementById('search-results-header');
+  hdr.textContent = results.length ? `Найдено: ${results.length}` : 'Ничего не найдено';
+  const grid = document.getElementById('search-grid');
+  if(!results.length){ grid.innerHTML=''; document.getElementById('search-results').style.display='block'; return; }
+  grid.innerHTML = results.map(item => {
+    const cat = D.cats.find(c=>c.id===item.cId);
+    const sec = D.sections.find(s=>s.id===item.sId);
+    const jc = item.joy==='yes'?'j-yes':item.joy==='no'?'j-no':'j-none';
+    const jt = item.joy==='yes'?'✨':item.joy==='no'?'🗑':'···';
+    const sn = (item.name||'').replace(/'/g,"\'");
+    let topEl = item.fileType==='pdf'&&item.photo
+      ? `<div class="card-emoji">${cat?.icon||'✦'}</div>`
+      : item.photo ? `<img class="card-photo" src="${item.photo}" alt="${item.name}">`
+      : `<div class="card-emoji">${cat?.icon||'✦'}</div>`;
+    return `<div class="item-card">
+      ${topEl}
+      <div class="card-body">
+        <div style="font-size:.6rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${sec?.name||''} › ${cat?.name||''}</div>
+        <div class="card-name">${item.name}</div>
+        ${item.brand?`<div class="card-color">${item.brand}</div>`:''}
+        <div class="card-footer">
+          <span class="joy-badge ${jc}">${jt}</span>
+          <div class="card-actions">
+            <button class="card-btn" onclick="editItem('${item.id}')">✏</button>
+            <button class="card-btn del" onclick="askDel('${item.id}','${sn}')">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('search-results').style.display = 'block';
+}
+
+function clearSearch(){
+  document.getElementById('search-input').value='';
+  document.getElementById('search-clear').classList.remove('vis');
+  document.getElementById('search-results').style.display='none';
+}
+
+// ══════════════════════════════════════════
+// 📦 РЕЖИМ РАЗБОРА
+// ══════════════════════════════════════════
+let sortQueue = [];
+let sortIndex = 0;
+let sortResults = {yes:0, no:0, maybe:0};
+
+function startSortMode(){
+  // Берём все вещи без оценки в текущей категории, если нет — все в категории
+  let items = D.items.filter(i=>i.cId===curCat && !i.joy);
+  if(!items.length) items = D.items.filter(i=>i.cId===curCat);
+  if(!items.length){ alert('В этой категории нет вещей'); return; }
+  sortQueue = [...items];
+  sortIndex = 0;
+  sortResults = {yes:0,no:0,maybe:0};
+  document.getElementById('sort-overlay').classList.add('show');
+  const cat = D.cats.find(c=>c.id===curCat);
+  document.getElementById('sort-cat-label').textContent = cat?.name||'';
+  document.getElementById('sort-done').classList.remove('show');
+  document.getElementById('sort-card').style.display='block';
+  document.getElementById('sort-actions').style.display='flex';
+  renderSortCard();
+}
+
+function renderSortCard(){
+  const item = sortQueue[sortIndex];
+  const total = sortQueue.length;
+  document.getElementById('sort-progress-label').textContent = `${sortIndex+1} / ${total}`;
+  document.getElementById('sort-progress-fill').style.width = `${((sortIndex)/total)*100}%`;
+  const cat = D.cats.find(c=>c.id===item.cId);
+  const subName = item.subId ? D.subs.find(s=>s.id===item.subId)?.name : '';
+  const jLabel = item.joy==='yes'?'✨ Радость':item.joy==='no'?'🗑 Убрать':item.joy==='maybe'?'🤔 Позже':'';
+  const jColor = item.joy==='yes'?'rgba(45,96,80,.15)':item.joy==='no'?'rgba(184,103,58,.15)':item.joy==='maybe'?'rgba(107,127,163,.15)':'transparent';
+  const topEl = item.fileType!=='pdf'&&item.photo
+    ? `<img class="sort-card-photo" src="${item.photo}" alt="${item.name}">`
+    : `<div class="sort-card-emoji">${cat?.icon||'✦'}</div>`;
+  document.getElementById('sort-card').innerHTML = `
+    ${topEl}
+    <div class="sort-card-body">
+      ${subName?`<div style="font-size:.65rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${subName}</div>`:''}
+      <div class="sort-card-name">${item.name}</div>
+      <div class="sort-card-meta">${[item.brand, item.color?`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};vertical-align:middle;border:1px solid rgba(0,0,0,.1)"></span>`:''].filter(Boolean).join(' ')}</div>
+      ${jLabel?`<div class="sort-card-tag" style="background:${jColor};color:var(--tx2)">${jLabel}</div>`:''}
+    </div>`;
+}
+
+function sortDecide(joy){
+  const card = document.getElementById('sort-card');
+  const dir = joy==='yes'?1:joy==='no'?-1:0;
+  card.style.transform = `translateX(${dir*120}px) rotate(${dir*8}deg)`;
+  card.style.opacity = '0';
+  const item = sortQueue[sortIndex];
+  const found = D.items.find(i=>i.id===item.id);
+  if(found){ found.joy = joy; sortResults[joy]++; }
+  save(); updateStats();
+  setTimeout(()=>{
+    card.style.transition = 'none';
+    card.style.transform = 'translateX(0) rotate(0)';
+    card.style.opacity = '1';
+    sortIndex++;
+    if(sortIndex >= sortQueue.length){
+      finishSortMode();
+    } else {
+      setTimeout(()=>{ card.style.transition=''; renderSortCard(); }, 30);
+    }
+  }, 250);
+}
+
+function finishSortMode(){
+  document.getElementById('sort-progress-fill').style.width='100%';
+  document.getElementById('sort-progress-label').textContent='Готово!';
+  document.getElementById('sort-card').style.display='none';
+  document.getElementById('sort-actions').style.display='none';
+  const done = document.getElementById('sort-done');
+  done.classList.add('show');
+  document.getElementById('sort-done-text').innerHTML =
+    `Разобрано ${sortQueue.length} вещей:<br>✨ Радость: <b>${sortResults.yes}</b> · 🗑 Убрать: <b>${sortResults.no}</b> · 🤔 Позже: <b>${sortResults.maybe}</b>`;
+  renderItems();
+}
+
+function closeSortMode(){
+  document.getElementById('sort-overlay').classList.remove('show');
+  renderItems();
+}
+
+// ══════════════════════════════════════════
+// 📊 СТАТИСТИКА
+// ══════════════════════════════════════════
+function openStats(){
+  window._prevStatsState = {sec:curSection, cat:curCat};
+  window._inStats = true;
+  showScreen('stats');
+  setTopbar('Статистика', true);
+  renderStats();
+}
+
+function renderStats(){
+  const total = D.items.length;
+  const yes = D.items.filter(i=>i.joy==='yes').length;
+  const no = D.items.filter(i=>i.joy==='no').length;
+  const maybe = D.items.filter(i=>i.joy==='maybe').length;
+  const unrated = total - yes - no - maybe;
+
+  let html = `
+  <div class="stats-big-row">
+    <div class="stats-big-chip">
+      <div class="stats-big-num" style="color:var(--blue)">${total}</div>
+      <div class="stats-big-label">Всего вещей</div>
+    </div>
+    <div class="stats-big-chip">
+      <div class="stats-big-num" style="color:#2d6050">${total?Math.round(yes/total*100):0}%</div>
+      <div class="stats-big-label">Радость</div>
+    </div>
+    <div class="stats-big-chip">
+      <div class="stats-big-num" style="color:#b8673a">${D.sections.length}</div>
+      <div class="stats-big-label">Разделов</div>
+    </div>
+  </div>
+
+  <div class="stats-joy-row">
+    <div class="stats-joy-chip sjc-yes">
+      <div class="stats-joy-num">${yes}</div>
+      <div class="stats-joy-label">✨ Радость</div>
+    </div>
+    <div class="stats-joy-chip sjc-no">
+      <div class="stats-joy-num">${no}</div>
+      <div class="stats-joy-label">🗑 Убрать</div>
+    </div>
+    <div class="stats-joy-chip sjc-maybe">
+      <div class="stats-joy-num">${maybe}</div>
+      <div class="stats-joy-label">🤔 Позже</div>
+    </div>
+    <div class="stats-joy-chip sjc-none">
+      <div class="stats-joy-num">${unrated}</div>
+      <div class="stats-joy-label">Не оценено</div>
+    </div>
+  </div>`;
+
+  if(total === 0){
+    html += `<div style="text-align:center;padding:40px;color:var(--tx3)">Добавь вещи чтобы увидеть статистику</div>`;
+    document.getElementById('stats-content').innerHTML = html;
+    return;
+  }
+
+  // По разделам
+  html += `<div class="stats-section"><div class="stats-section-title">По разделам</div>`;
+  const gColors = ['var(--g1)','var(--g2)','var(--g3)','var(--g4)','var(--g5)'];
+  D.sections.forEach((sec,i)=>{
+    const cnt = D.items.filter(it=>it.sId===sec.id).length;
+    const pct = total ? Math.round(cnt/total*100) : 0;
+    const joyPct = cnt ? Math.round(D.items.filter(it=>it.sId===sec.id&&it.joy==='yes').length/cnt*100) : 0;
+    html += `<div class="stats-bar-row">
+      <div class="stats-bar-label">
+        <span class="stats-bar-name">${sec.icon} ${sec.name}</span>
+        <span class="stats-bar-count">${cnt} вещей · ${joyPct}% радость</span>
+      </div>
+      <div class="stats-bar-track">
+        <div class="stats-bar-fill" style="width:${pct}%;background:${gColors[i%5]}"></div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Топ категории
+  const catCounts = D.cats.map(c=>({
+    cat:c, cnt: D.items.filter(i=>i.cId===c.id).length
+  })).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).slice(0,6);
+
+  if(catCounts.length){
+    html += `<div class="stats-section"><div class="stats-section-title">Топ категорий</div>`;
+    const maxC = catCounts[0].cnt;
+    catCounts.forEach(({cat,cnt},i)=>{
+      html += `<div class="stats-bar-row">
+        <div class="stats-bar-label">
+          <span class="stats-bar-name">${cat.icon} ${cat.name}</span>
+          <span class="stats-bar-count">${cnt}</span>
+        </div>
+        <div class="stats-bar-track">
+          <div class="stats-bar-fill" style="width:${Math.round(cnt/maxC*100)}%;background:${gColors[i%5]}"></div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Прогресс разбора
+  const rated = yes+no+maybe;
+  const ratePct = total ? Math.round(rated/total*100) : 0;
+  html += `<div class="stats-section">
+    <div class="stats-section-title">Прогресс КонМари</div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:18px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:.9rem;font-weight:700;color:var(--tx)">Разобрано</span>
+        <span style="font-size:.9rem;font-weight:800;color:var(--blue)">${ratePct}%</span>
+      </div>
+      <div class="stats-bar-track" style="height:10px;border-radius:5px">
+        <div class="stats-bar-fill" style="width:${ratePct}%;background:var(--g1);height:100%;border-radius:5px"></div>
+      </div>
+      <div style="font-size:.75rem;color:var(--tx3);margin-top:8px">${rated} из ${total} вещей оценены</div>
+    </div>
+  </div>`;
+
+  document.getElementById('stats-content').innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// 🔄 ЭКСПОРТ СПИСКА "УБРАТЬ"
+// ══════════════════════════════════════════
+function exportDonate(){
+  const toRemove = D.items.filter(i=>i.joy==='no');
+  if(!toRemove.length){ alert('Список пуст'); return; }
+  let text = '🗑 Список вещей на выход\n';
+  text += '═'.repeat(28) + '\n\n';
+  const bySec = {};
+  toRemove.forEach(item=>{
+    const key = item.sId||'other';
+    if(!bySec[key]) bySec[key]={sec:D.sections.find(s=>s.id===item.sId),items:[]};
+    bySec[key].items.push(item);
+  });
+  Object.values(bySec).forEach(({sec,items})=>{
+    text += `${sec?.icon||'📦'} ${sec?.name||'Прочее'}\n`;
+    items.forEach(item=>{
+      const cat = D.cats.find(c=>c.id===item.cId);
+      text += `  • ${item.name}`;
+      if(item.brand) text += ` (${item.brand})`;
+      if(cat) text += ` — ${cat.name}`;
+      text += '\n';
+    });
+    text += '\n';
+  });
+  text += `Итого: ${toRemove.length} вещей`;
+  // Копируем в буфер
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>{
+      showToast('Скопировано в буфер обмена! 📋');
+    }).catch(()=> fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); showToast('Скопировано! 📋'); }
+  catch(e){ alert(text); }
+  document.body.removeChild(ta);
+}
+
+// Toast уведомление
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText='position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#2a2018;color:#f5ede4;padding:12px 20px;border-radius:24px;font-size:.85rem;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:opacity .3s;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.style.opacity='0', 2500);
+}
+
+// Кнопка поиска в топбаре (добавляем в goHome/openSection/openCat)
+
+// ══ WISHLIST ══
+const SK_WISH = 'konmari_wish_v1';
+let W = JSON.parse(localStorage.getItem(SK_WISH)||'[]');
+const saveWish_ = () => { try{localStorage.setItem(SK_WISH,JSON.stringify(W))}catch(e){alert('Мало места')} };
+
+let wishFilter = 'all';
+let wishPriority = null;
+let curWishPhoto = null;
+let editWishId = null;
+
+function openWishlist(){
+  window._prevWishState = {sec:curSection, cat:curCat};
+  window._inWish = true;
+  showScreen('wish');
+  setTopbar('Вишлист', true);
+  renderWishlist();
+  updateWishBtn();
+}
+
+function updateWishBtn(){
+  const btn = document.getElementById('wish-btn');
+  btn.textContent = W.length > 0 ? '♥' : '♡';
+  btn.classList.toggle('has-items', W.length > 0);
+}
+
+function setWishFilter(f){
+  wishFilter = f;
+  document.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('wf-'+f).classList.add('active');
+  renderWishlist();
+}
+
+function renderWishlist(){
+  let items = [...W];
+  if(wishFilter !== 'all') items = items.filter(i=>i.priority===wishFilter);
+  items.sort((a,b)=>(a.priority==='dream'?0:1)-(b.priority==='dream'?0:1)||(b.date>a.date?1:-1));
+
+  const grid = document.getElementById('wish-grid');
+  if(!items.length){
+    grid.innerHTML=`<div class="wish-empty">
+      <span class="ei">♡</span>
+      <p>Вишлист пуст</p>
+      <small>Добавь вещи которые хочешь купить</small>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = items.map(w => {
+    const sn = (w.name||'').replace(/'/g,"\'");
+    const pClass = w.priority==='dream' ? 'wp-dream' : 'wp-want';
+    const pLabel = w.priority==='dream' ? '✨ Мечтаю' : '🛍 Хочу';
+    const topEl = w.photo
+      ? `<img class="wish-photo" src="${w.photo}" alt="${w.name}">`
+      : `<div class="wish-emoji">🛍</div>`;
+    return `<div class="wish-card">
+      <div class="wish-card-top">
+        ${topEl}
+        <span class="wish-priority ${pClass}">${pLabel}</span>
+        <div class="wish-actions-top">
+          <button class="card-btn" onclick="editWish('${w.id}')">✏</button>
+          <button class="card-btn del" onclick="deleteWish('${w.id}','${sn}')">✕</button>
+        </div>
+      </div>
+      <div class="wish-card-body">
+        <div class="wish-name">${w.name}</div>
+        ${w.brand?`<div class="wish-brand">${w.brand}</div>`:''}
+        ${w.price?`<div class="wish-price">${w.price}</div>`:''}
+        ${w.desc?`<div class="card-desc">${w.desc}</div>`:''}
+        <div class="wish-footer">
+          ${w.link?`<a class="wish-link-btn" href="${w.link}" target="_blank">🔗 В магазин</a>`:'<span></span>'}
+          <button class="wish-bought-btn" onclick="markWishBought('${w.id}')">✓ Купила</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openWishModal(){
+  editWishId=null; wishPriority=null; curWishPhoto=null;
+  document.getElementById('wm-h').textContent='Добавить в вишлист';
+  document.getElementById('wm-save-btn').textContent='Добавить';
+  document.getElementById('wm-name').value='';
+  document.getElementById('wm-brand').value='';
+  document.getElementById('wm-price').value='';
+  document.getElementById('wm-link').value='';
+  document.getElementById('wm-desc').value='';
+  document.querySelectorAll('#ov-wish .jbtn').forEach(b=>b.className='jbtn');
+  document.getElementById('pz-wish-input').value='';
+  document.getElementById('pzph-wish').style.display='block';
+  document.getElementById('pzprev-wish').style.display='none';
+  openOv('ov-wish');
+  setTimeout(()=>document.getElementById('wm-name').focus(),50);
+}
+
+function editWish(id){
+  const w = W.find(x=>x.id===id); if(!w) return;
+  editWishId=id; wishPriority=w.priority||null; curWishPhoto=w.photo||null;
+  document.getElementById('wm-h').textContent='Редактировать';
+  document.getElementById('wm-save-btn').textContent='Сохранить';
+  document.getElementById('wm-name').value=w.name||'';
+  document.getElementById('wm-brand').value=w.brand||'';
+  document.getElementById('wm-price').value=w.price||'';
+  document.getElementById('wm-link').value=w.link||'';
+  document.getElementById('wm-desc').value=w.desc||'';
+  document.querySelectorAll('#ov-wish .jbtn').forEach(b=>b.className='jbtn');
+  if(w.priority==='dream') document.getElementById('wb-dream').className='jbtn ay';
+  if(w.priority==='want') document.getElementById('wb-want').className='jbtn ay';
+  if(w.photo){
+    document.getElementById('pzph-wish').style.display='none';
+    document.getElementById('pzprev-wish').style.display='block';
+    document.getElementById('pzimg-wish').src=w.photo;
+  } else {
+    document.getElementById('pzph-wish').style.display='block';
+    document.getElementById('pzprev-wish').style.display='none';
+  }
+  openOv('ov-wish');
+  setTimeout(()=>document.getElementById('wm-name').focus(),50);
+}
+
+function setWishPriority(v){
+  wishPriority=v;
+  document.querySelectorAll('#ov-wish .jbtn').forEach(b=>b.className='jbtn');
+  document.getElementById('wb-'+v).className='jbtn ay';
+}
+
+function saveWish(){
+  const name=document.getElementById('wm-name').value.trim();
+  if(!name){document.getElementById('wm-name').focus();return;}
+  const data={
+    name, priority:wishPriority,
+    brand:document.getElementById('wm-brand').value.trim(),
+    price:document.getElementById('wm-price').value.trim(),
+    link:document.getElementById('wm-link').value.trim(),
+    desc:document.getElementById('wm-desc').value.trim(),
+    photo:curWishPhoto,
+    date:new Date().toISOString()
+  };
+  if(editWishId){
+    const idx=W.findIndex(x=>x.id===editWishId);
+    if(idx>-1) W[idx]={...W[idx],...data};
+  } else {
+    data.id=uid(); W.unshift(data);
+  }
+  saveWish_(); closeOv('ov-wish'); renderWishlist(); updateWishBtn();
+}
+
+function deleteWish(id, name){
+  if(!confirm(`Удалить "${name}" из вишлиста?`)) return;
+  W=W.filter(w=>w.id!==id); saveWish_(); renderWishlist(); updateWishBtn();
+}
+
+function markWishBought(id){
+  if(!confirm('Поздравляю с покупкой! 🎉 Удалить из вишлиста?')) return;
+  W=W.filter(w=>w.id!==id); saveWish_(); renderWishlist(); updateWishBtn();
+}
+
+// Фото для вишлиста
+function pzDropWish(e){e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadWishPhoto(f);}
+function pzSelectWish(e){const f=e.target.files[0];if(f)loadWishPhoto(f);}
+function loadWishPhoto(file){
+  const r=new FileReader();
+  r.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const c=document.createElement('canvas'),M=900;let w=img.width,h=img.height;
+      if(w>M||h>M){if(w>h){h=Math.round(h*M/w);w=M;}else{w=Math.round(w*M/h);h=M;}}
+      c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      curWishPhoto=c.toDataURL('image/jpeg',.78);
+      document.getElementById('pzph-wish').style.display='none';
+      document.getElementById('pzprev-wish').style.display='block';
+      document.getElementById('pzimg-wish').src=curWishPhoto;
+    };img.src=e.target.result;
+  };r.readAsDataURL(file);
+}
+function pzRmWish(e){
+  e.stopPropagation(); curWishPhoto=null;
+  document.getElementById('pz-wish-input').value='';
+  document.getElementById('pzph-wish').style.display='block';
+  document.getElementById('pzprev-wish').style.display='none';
+}
+
+updateWishBtn();
+function goBack(){
+  if(window._inStats){
+    window._inStats=false;
+    const prev=window._prevStatsState||{};
+    if(prev.cat){curSection=prev.sec;curCat=prev.cat;renderItems();showScreen('items');const cat=D.cats.find(c=>c.id===curCat);setTopbar(cat?.icon+' '+cat?.name,true);}
+    else if(prev.sec){curSection=prev.sec;curCat=null;renderCats();showScreen('cats');const sec=D.sections.find(s=>s.id===curSection);setTopbar(sec?.name,true);}
+    else goHome();
+  } else if(window._inWish){
+    window._inWish=false;
+    const prev=window._prevWishState||{};
+    if(prev.cat){curSection=prev.sec;curCat=prev.cat;renderItems();showScreen('items');const cat=D.cats.find(c=>c.id===curCat);setTopbar(cat?.icon+' '+cat?.name,true);}
+    else if(prev.sec){curSection=prev.sec;curCat=null;renderCats();showScreen('cats');const sec=D.sections.find(s=>s.id===curSection);setTopbar(sec?.name,true);}
+    else goHome();
+  } else if(window._inDonate){
+    window._inDonate=false;
+    const prev=window._prevDonateState||{};
+    if(prev.cat){curSection=prev.sec;curCat=prev.cat;renderItems();showScreen('items');const cat=D.cats.find(c=>c.id===curCat);setTopbar(cat?.icon+' '+cat?.name,true);}
+    else if(prev.sec){curSection=prev.sec;curCat=null;renderCats();showScreen('cats');const sec=D.sections.find(s=>s.id===curSection);setTopbar(sec?.name,true);}
+    else goHome();
+  } else {
+    if(curCat){openSection(curSection);}
+    else if(curSection){goHome();}
+    else goHome();
+  }
+}
+function openSection(sId){
+  curSection=sId;curCat=null;curSub=null;
+  const sec=D.sections.find(s=>s.id===sId);
+  renderCats();showScreen('cats');
+  document.getElementById('cats-title').textContent=sec.icon+' '+sec.name;
+  setTopbar(sec.name,true);
+}
+function openCat(cId){
+  curCat=cId;curSub=null;
+  const cat=D.cats.find(c=>c.id===cId);
+  renderItems();showScreen('items');
+  setTopbar(cat.icon+' '+cat.name,true);
+}
+function resetFilters(){
+  document.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
+  const ja=document.getElementById('jf-all');if(ja)ja.classList.add('active');
+  const sn=document.getElementById('sort-newest');if(sn)sn.classList.add('active');
+}
+
+// Stats
+function updateStats(){
+  document.getElementById('st-total').textContent=D.items.length;
+  document.getElementById('st-joy').textContent=D.items.filter(i=>i.joy==='yes').length;
+  document.getElementById('st-out').textContent=D.items.filter(i=>i.joy==='no').length;
+}
+
+// Render home
+function renderHome(){
+  updateStats();
+  document.getElementById('sections-grid').innerHTML=D.sections.map(sec=>{
+    const cats=D.cats.filter(c=>c.sId===sec.id);
+    const cnt=D.items.filter(i=>i.sId===sec.id).length;
+    const pct=Math.max(5,Math.round(cnt/(D.items.length||1)*100));
+    const catNames=cats.slice(0,3).map(c=>c.name).join(', ')+(cats.length>3?'…':'');
+    return `<div class="section-tile" onclick="openSection('${sec.id}')">
+      <div class="tile-top">
+        <div class="tile-icon-wrap">${sec.icon}</div>
+        <div class="tile-acts" onclick="event.stopPropagation()">
+          <button class="ta-btn" onclick="openRename('section','${sec.id}')">✏</button>
+          <button class="ta-btn" onclick="deleteSection('${sec.id}')">✕</button>
+        </div>
+      </div>
+      <div class="tile-name">${sec.name}</div>
+      <div class="tile-meta">${cnt} вещей · ${cats.length} категорий</div>
+      <div class="tile-bar"><div class="tile-bar-fill" style="width:${pct}%"></div></div>
+      ${catNames?`<div class="tile-cats">${catNames}</div>`:''}
+    </div>`;
+  }).join('')+`<div class="stylist-tile" onclick="window.location.href='stylist.html'">
+      <div class="tile-top">
+        <div class="tile-icon-wrap">✨</div>
+      </div>
+      <div class="tile-name">Стилист</div>
+      <div class="st-desc">Капсулы из ваших вещей · Подбор по типу фигуры · Цветовые сочетания · Советы по аксессуарам</div>
+    </div><div class="add-tile" onclick="openSectionModal()">
+    <div class="add-tile-icon">＋</div><div class="add-tile-text">Новый раздел</div>
+  </div>`;
+}
+
+// Render cats
+function renderCats(){
+  updateStats();
+  document.getElementById('cats-grid').innerHTML=D.cats.filter(c=>c.sId===curSection).map(cat=>{
+    const subs=D.subs.filter(s=>s.cId===cat.id);
+    const cnt=D.items.filter(i=>i.cId===cat.id).length;
+    const subNames=subs.slice(0,3).map(s=>s.name).join(', ')+(subs.length>3?'…':'');
+    return `<div class="cat-tile" onclick="openCat('${cat.id}')">
+      <div class="ct-acts" onclick="event.stopPropagation()">
+        <button class="ta-btn" onclick="openRename('cat','${cat.id}')">✏</button>
+        <button class="ta-btn" onclick="deleteCat('${cat.id}')">✕</button>
+      </div>
+      <div class="ct-icon">${cat.icon}</div>
+      <div class="ct-name">${cat.name}</div>
+      <div class="ct-meta">${cnt} вещей</div>
+      ${subNames?`<div class="ct-subs">${subNames}</div>`:''}
+    </div>`;
+  }).join('')+`<div class="cat-tile" style="border:1.5px dashed rgba(255,255,255,.09);justify-content:center;align-items:center;gap:8px;cursor:pointer;min-height:120px" onclick="openCatModal()">
+    <div style="font-size:1.4rem;color:var(--tx3)">＋</div>
+    <div style="font-size:.65rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Новая категория</div>
+  </div>`;
+}
+
+// Render items
+function renderItems(){
+  updateStats();
+  const cat=D.cats.find(c=>c.id===curCat);
+  const subs=D.subs.filter(s=>s.cId===curCat);
+  document.getElementById('sub-tabs').innerHTML=
+    `<button class="sub-tab${curSub===null?' active':''}" onclick="setSub(null)">Все <span class="sc">${D.items.filter(i=>i.cId===curCat).length}</span></button>`+
+    subs.map(s=>{const cnt=D.items.filter(i=>i.subId===s.id).length;
+      return `<button class="sub-tab${curSub===s.id?' active':''}" onclick="setSub('${s.id}')">
+        ${s.name} <span class="sc">${cnt}</span>
+        <span onclick="event.stopPropagation();deleteSub('${s.id}')" style="color:var(--tx3);font-size:.6rem">✕</span>
+      </button>`;}).join('')+
+    `<button class="sub-tab sub-tab-add" onclick="openSubModal()">+ подкатегория</button>`;
+
+  let items=D.items.filter(i=>i.cId===curCat);
+  if(curSub)items=items.filter(i=>i.subId===curSub);
+  if(joyFilter!=='all')items=items.filter(i=>i.joy===joyFilter);
+  if(sortMode==='name')items.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+
+  const grid=document.getElementById('items-grid');
+  if(!items.length){grid.innerHTML=`<div class="empty"><span class="ei">✦</span><p>Здесь пока пусто</p><small>Нажми «+ Добавить» чтобы начать</small></div>`;return;}
+  grid.innerHTML=items.map(item=>{
+    const jc=item.joy==='yes'?'j-yes':item.joy==='no'?'j-no':'j-none';
+    const jt=item.joy==='yes'?'✨':item.joy==='no'?'🗑':'···';
+    const sn=(item.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const subName=item.subId?D.subs.find(s=>s.id===item.subId)?.name:'';
+    const colorDot=item.color?`<span class="card-color-dot" style="background:${item.color}"></span>`:'';
+    let topEl=item.fileType==='pdf'&&item.photo
+      ?`<div class="card-pdf" onclick="openPDF('${item.id}')"><span style="font-size:1.8rem">📄</span><div class="card-pdf-name">${item.fileName||'документ.pdf'}</div><div class="card-pdf-hint">открыть</div></div>`
+      :item.photo?`<img class="card-photo" src="${item.photo}" alt="${item.name}" onclick="lbOpen('${item.id}')">`
+      :`<div class="card-emoji">${cat?.icon||'✦'}</div>`;
+    return `<div class="item-card">
+      ${topEl}
+      <div class="card-body">
+        ${subName?`<span class="card-tag">${subName}</span><br>`:''}
+        <div class="card-name">${item.name}</div>
+        ${item.color||item.brand?`<div class="card-color">${colorDot}${item.brand||''}${item.brand&&item.color?' · ':''}${item.color?'':''}  </div>`:''}
+        ${item.desc?`<div class="card-desc">${item.desc}</div>`:''}
+        <div class="card-footer">
+          <span class="joy-badge ${jc}">${jt}</span>
+          <div class="card-actions">
+            <button class="card-btn" onclick="editItem('${item.id}')">✏</button>
+            <button class="card-btn del" onclick="askDel('${item.id}','${sn}')">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setSub(id){curSub=id;renderItems();}
+function setJoyFilter(f){
+  joyFilter=f;
+  document.querySelectorAll('#screen-items .pill-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('jf-'+f).classList.add('active');
+  renderItems();
+}
+function setSort(s){
+  sortMode=s;['newest','name'].forEach(x=>{const el=document.getElementById('sort-'+x);if(el)el.classList.remove('active');});
+  document.getElementById('sort-'+s).classList.add('active');renderItems();
+}
+
+// Emoji grid
+function renderEgrid(elId,sel,setter){
+  document.getElementById(elId).innerHTML=EMOJIS.map(e=>
+    `<button class="ep${e===sel?' sel':''}" onclick="${setter}('${e}');renderEgrid('${elId}','${e}',${setter.toString()})">${e}</button>`
+  ).join('');
+}
+
+// Section modal
+function openSectionModal(id){
+  smEmoji=id?D.sections.find(s=>s.id===id)?.icon||'📦':'📦';
+  document.getElementById('sm-h').textContent=id?'Изменить раздел':'Новый раздел';
+  document.getElementById('sm-name').value=id?D.sections.find(s=>s.id===id)?.name||'':'';
+  window._editSecId=id||null;
+  renderEgrid('sm-egrid',smEmoji,e=>smEmoji=e);
+  openOv('ov-section');setTimeout(()=>document.getElementById('sm-name').focus(),50);
+}
+function saveSection(){
+  const name=document.getElementById('sm-name').value.trim();if(!name)return;
+  if(window._editSecId){const s=D.sections.find(x=>x.id===window._editSecId);if(s){s.name=name;s.icon=smEmoji;}}
+  else D.sections.push({id:uid(),name,icon:smEmoji});
+  save();closeOv('ov-section');renderHome();
+}
+
+// Category modal
+function openCatModal(id){
+  cmEmoji=id?D.cats.find(c=>c.id===id)?.icon||'📁':'📁';
+  document.getElementById('cm-h').textContent=id?'Изменить категорию':'Новая категория';
+  document.getElementById('cm-name').value=id?D.cats.find(c=>c.id===id)?.name||'':'';
+  window._editCatId=id||null;
+  renderEgrid('cm-egrid',cmEmoji,e=>cmEmoji=e);
+  openOv('ov-cat');setTimeout(()=>document.getElementById('cm-name').focus(),50);
+}
+function saveCat(){
+  const name=document.getElementById('cm-name').value.trim();if(!name)return;
+  if(window._editCatId){const c=D.cats.find(x=>x.id===window._editCatId);if(c){c.name=name;c.icon=cmEmoji;}}
+  else D.cats.push({id:uid(),sId:curSection,name,icon:cmEmoji});
+  save();closeOv('ov-cat');renderCats();
+}
+
+// Sub modal
+function openSubModal(){document.getElementById('sbm-name').value='';openOv('ov-sub');setTimeout(()=>document.getElementById('sbm-name').focus(),50);}
+function saveSub(){const name=document.getElementById('sbm-name').value.trim();if(!name||!curCat)return;D.subs.push({id:uid(),cId:curCat,name});save();closeOv('ov-sub');renderItems();}
+
+// Item modal
+function openItemModal(){
+  editItemId=null;joyVal=null;curPhoto=null;curFileType=null;curFileName=null;curColor='#6366f1';
+  document.getElementById('im-h').textContent='Добавить вещь';
+  document.getElementById('im-save-btn').textContent='Добавить';
+  document.getElementById('im-name').value='';
+  document.getElementById('im-brand').value='';
+  document.getElementById('im-desc').value='';
+  document.querySelectorAll('.jbtn').forEach(b=>b.className='jbtn');
+  document.getElementById('pz-input').value='';
+  document.getElementById('pzph').style.display='block';
+  document.getElementById('pzprev').style.display='none';
+  document.getElementById('pzimg').style.display='none';
+  document.getElementById('pzpdf').style.display='none';
+  onColorPick('#6366f1');
+  const subs=D.subs.filter(s=>s.cId===curCat);
+  document.getElementById('im-sub').innerHTML='<option value="">— без подкатегории —</option>'+
+    subs.map(s=>`<option value="${s.id}"${curSub===s.id?' selected':''}>${s.name}</option>`).join('');
+  openOv('ov-item');setTimeout(()=>document.getElementById('im-name').focus(),50);
+}
+
+function editItem(id){
+  const item=D.items.find(i=>i.id===id);if(!item)return;
+  editItemId=id;joyVal=item.joy||null;curPhoto=item.photo||null;
+  curFileType=item.fileType||null;curFileName=item.fileName||null;
+  curColor=item.color||'#6366f1';
+  document.getElementById('im-h').textContent='Редактировать';
+  document.getElementById('im-save-btn').textContent='Сохранить';
+  document.getElementById('im-name').value=item.name||'';
+  document.getElementById('im-brand').value=item.brand||'';
+  document.getElementById('im-desc').value=item.desc||'';
+  document.querySelectorAll('.jbtn').forEach(b=>b.className='jbtn');
+  if(item.joy==='yes')document.getElementById('jb-yes').className='jbtn ay';
+  if(item.joy==='no')document.getElementById('jb-no').className='jbtn an';
+  // photo/pdf preview
+  document.getElementById('pz-input').value='';
+  if(item.photo&&item.fileType==='pdf'){
+    document.getElementById('pzph').style.display='none';
+    document.getElementById('pzprev').style.display='block';
+    document.getElementById('pzimg').style.display='none';
+    document.getElementById('pzpdf').style.display='flex';
+    document.getElementById('pzpdf-name').textContent=item.fileName||'документ.pdf';
+  } else if(item.photo){
+    document.getElementById('pzph').style.display='none';
+    document.getElementById('pzprev').style.display='block';
+    document.getElementById('pzimg').style.display='block';
+    document.getElementById('pzimg').src=item.photo;
+    document.getElementById('pzpdf').style.display='none';
+  } else {
+    document.getElementById('pzph').style.display='block';
+    document.getElementById('pzprev').style.display='none';
+    document.getElementById('pzimg').style.display='none';
+    document.getElementById('pzpdf').style.display='none';
+  }
+  onColorPick(curColor);
+  const subs=D.subs.filter(s=>s.cId===curCat);
+  document.getElementById('im-sub').innerHTML='<option value="">— без подкатегории —</option>'+
+    subs.map(s=>`<option value="${s.id}"${item.subId===s.id?' selected':''}>${s.name}</option>`).join('');
+  openOv('ov-item');setTimeout(()=>document.getElementById('im-name').focus(),50);
+}
+
+function setJoy(v){
+  joyVal=v;document.querySelectorAll('.jbtn').forEach(b=>b.className='jbtn');
+  if(v==='yes')document.getElementById('jb-yes').className='jbtn ay';
+  if(v==='no')document.getElementById('jb-no').className='jbtn an';
+}
+function saveItem(){
+  const name=document.getElementById('im-name').value.trim();
+  if(!name){document.getElementById('im-name').focus();return;}
+  if(editItemId){
+    const item=D.items.find(i=>i.id===editItemId);
+    if(item){
+      item.name=name;item.brand=document.getElementById('im-brand').value.trim();
+      item.desc=document.getElementById('im-desc').value.trim();
+      item.subId=document.getElementById('im-sub').value||null;
+      item.joy=joyVal;item.color=curColor;
+      if(curPhoto!==null)item.photo=curPhoto;
+      if(curFileType!==null)item.fileType=curFileType;
+      if(curFileName!==null)item.fileName=curFileName;
+    }
+    try{save();}catch(e){alert('Мало места');}
+  } else {
+    const item={id:uid(),name,sId:curSection,cId:curCat,
+      subId:document.getElementById('im-sub').value||null,
+      color:curColor,brand:document.getElementById('im-brand').value.trim(),
+      desc:document.getElementById('im-desc').value.trim(),
+      joy:joyVal,photo:curPhoto,fileType:curFileType||null,fileName:curFileName||null,
+      date:new Date().toISOString()};
+    D.items.unshift(item);
+    try{save();}catch(e){item.photo=null;item.fileType=null;D.items[0]=item;save();alert('Файл не сохранён — мало места.');}
+  }
+  closeOv('ov-item');renderItems();
+}
+
+// File upload
+function pzDrag(e,on){e.preventDefault();document.getElementById('pz').classList.toggle('drag',on);}
+function pzDrop(e){e.preventDefault();document.getElementById('pz').classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;if(f.type==='application/pdf')loadPDF(f);else if(f.type.startsWith('image/'))loadPhoto(f);}
+function pzSelect(e){const f=e.target.files[0];if(!f)return;if(f.type==='application/pdf')loadPDF(f);else if(f.type.startsWith('image/'))loadPhoto(f);}
+function loadPhoto(file){
+  curFileType='image';curFileName=file.name;
+  const r=new FileReader();
+  r.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const c=document.createElement('canvas'),M=900;let w=img.width,h=img.height;
+      if(w>M||h>M){if(w>h){h=Math.round(h*M/w);w=M;}else{w=Math.round(w*M/h);h=M;}}
+      c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      curPhoto=c.toDataURL('image/jpeg',.78);
+      document.getElementById('pzph').style.display='none';
+      document.getElementById('pzprev').style.display='block';
+      document.getElementById('pzimg').style.display='block';
+      document.getElementById('pzimg').src=curPhoto;
+      document.getElementById('pzpdf').style.display='none';
+    };img.src=e.target.result;
+  };r.readAsDataURL(file);
+}
+function loadPDF(file){
+  curFileType='pdf';curFileName=file.name;
+  const r=new FileReader();
+  r.onload=function(e){
+    curPhoto=e.target.result;
+    document.getElementById('pzph').style.display='none';
+    document.getElementById('pzprev').style.display='block';
+    document.getElementById('pzimg').style.display='none';
+    document.getElementById('pzpdf').style.display='flex';
+    document.getElementById('pzpdf-name').textContent=file.name;
+  };r.readAsDataURL(file);
+}
+function pzRm(e){
+  e.stopPropagation();curPhoto=null;curFileType=null;curFileName=null;
+  document.getElementById('pz-input').value='';
+  document.getElementById('pzph').style.display='block';
+  document.getElementById('pzprev').style.display='none';
+  document.getElementById('pzimg').style.display='none';
+  document.getElementById('pzpdf').style.display='none';
+}
+
+// Delete
+function askDel(id,name){delId=id;document.getElementById('del-text').textContent=`"${name}" — поблагодари эту вещь за службу.`;openOv('ov-del');}
+function confirmDel(){if(delId){D.items=D.items.filter(i=>i.id!==delId);save();renderItems();}closeOv('ov-del');delId=null;}
+function deleteSection(id){
+  if(!confirm('Удалить раздел? Все вещи будут удалены.'))return;
+  const catIds=D.cats.filter(c=>c.sId===id).map(c=>c.id);
+  D.subs=D.subs.filter(s=>!catIds.includes(s.cId));
+  D.items=D.items.filter(i=>i.sId!==id);
+  D.cats=D.cats.filter(c=>c.sId!==id);
+  D.sections=D.sections.filter(s=>s.id!==id);
+  save();renderHome();
+}
+function deleteCat(id){
+  if(!confirm('Удалить категорию? Все вещи будут удалены.'))return;
+  D.subs=D.subs.filter(s=>s.cId!==id);
+  D.items=D.items.filter(i=>i.cId!==id);
+  D.cats=D.cats.filter(c=>c.id!==id);
+  save();renderCats();
+}
+function deleteSub(id){
+  if(!confirm('Удалить подкатегорию?'))return;
+  D.items.forEach(i=>{if(i.subId===id)i.subId=null;});
+  D.subs=D.subs.filter(s=>s.id!==id);
+  if(curSub===id)curSub=null;save();renderItems();
+}
+
+// Rename
+let rnType=null,rnId=null;
+function openRename(type,id){
+  rnType=type;rnId=id;
+  document.getElementById('rn-h').textContent=type==='section'?'Изменить раздел':'Изменить категорию';
+  const wrap=document.getElementById('rn-emoji-wrap');
+  if(type==='section'){const s=D.sections.find(x=>x.id===id);document.getElementById('rn-name').value=s?.name||'';rnEmoji=s?.icon||'📦';wrap.style.display='block';renderEgrid('rn-egrid',rnEmoji,e=>rnEmoji=e);}
+  else{const c=D.cats.find(x=>x.id===id);document.getElementById('rn-name').value=c?.name||'';rnEmoji=c?.icon||'📁';wrap.style.display='block';renderEgrid('rn-egrid',rnEmoji,e=>rnEmoji=e);}
+  openOv('ov-rename');setTimeout(()=>document.getElementById('rn-name').focus(),50);
+}
+function confirmRename(){
+  const name=document.getElementById('rn-name').value.trim();if(!name)return;
+  if(rnType==='section'){const s=D.sections.find(x=>x.id===rnId);if(s){s.name=name;s.icon=rnEmoji;}}
+  else{const c=D.cats.find(x=>x.id===rnId);if(c){c.name=name;c.icon=rnEmoji;}}
+  save();closeOv('ov-rename');
+  if(rnType==='section')renderHome();else renderCats();
+}
+
+// Overlay
+function openOv(id){document.getElementById(id).classList.add('show');}
+function closeOv(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'));});
+
+// Lightbox
+function lbOpen(id){const item=D.items.find(i=>i.id===id);if(!item?.photo||item.fileType==='pdf')return;document.getElementById('lbimg').src=item.photo;document.getElementById('lbcap').textContent=item.name;document.getElementById('lb').classList.add('show');}
+function lbClose(){document.getElementById('lb').classList.remove('show');}
+function openPDF(id){const item=D.items.find(i=>i.id===id);if(!item?.photo)return;const w=window.open();w.document.write(`<html><head><title>${item.name}</title></head><body style="margin:0"><embed src="${item.photo}" type="application/pdf" width="100%" height="100%" style="position:fixed;inset:0">
+<!-- РАЗБОР OVERLAY -->
+<div id="sort-overlay">
+  <div class="sort-topbar">
+    <div class="sort-topbar-inner">
+      <button class="sort-close" onclick="closeSortMode()">✕</button>
+      <div class="sort-progress-wrap">
+        <div class="sort-progress-label" id="sort-progress-label">0 / 0</div>
+        <div class="sort-progress-bar"><div class="sort-progress-fill" id="sort-progress-fill" style="width:0%"></div></div>
+      </div>
+      <div style="font-size:.8rem;font-weight:700;color:var(--tx3)" id="sort-cat-label"></div>
+    </div>
+  </div>
+  <div class="sort-card-area" id="sort-card-area">
+    <div class="sort-card" id="sort-card"></div>
+    <div class="sort-done" id="sort-done">
+      <span class="sort-done-emoji">🎉</span>
+      <h3>Разбор завершён!</h3>
+      <p id="sort-done-text"></p>
+    </div>
+  </div>
+  <div class="sort-actions" id="sort-actions">
+    <button class="sort-act-btn sa-no" onclick="sortDecide('no')">
+      <div class="sort-act-icon">🗑</div>
+      <span class="sort-act-label">Убрать</span>
+    </button>
+    <button class="sort-act-btn sa-maybe" onclick="sortDecide('maybe')">
+      <div class="sort-act-icon">🤔</div>
+      <span class="sort-act-label">Позже</span>
+    </button>
+    <button class="sort-act-btn sa-yes" onclick="sortDecide('yes')">
+      <div class="sort-act-icon">✨</div>
+      <span class="sort-act-label">Радость</span>
+    </button>
+  </div>
+</div>
+</body></html>`);}
+
+// ══ DONATE SCREEN ══
+function openDonate(){
+  window._prevDonateState={sec:curSection,cat:curCat};
+  showScreen('donate');
+  setTopbar('Список «Убрать»',true);
+  window._inDonate=true;
+  renderDonate();
+}
+function renderDonate(){
+  const toRemove=D.items.filter(i=>i.joy==='no');
+  const el=document.getElementById('donate-content');
+  if(!toRemove.length){
+    el.innerHTML=`<div class="donate-empty"><span class="ei">✨</span><p>Нет вещей для удаления</p><small style="margin-top:8px;display:block;color:var(--tx3)">Отмечай вещи 🗑 и они появятся здесь</small></div>`;
+    return;
+  }
+  const bySec={};
+  toRemove.forEach(item=>{
+    const key=item.sId||'other';
+    if(!bySec[key])bySec[key]={sec:D.sections.find(s=>s.id===item.sId),items:[]};
+    bySec[key].items.push(item);
+  });
+  let html=`<div style="margin-bottom:18px;padding:12px 14px;background:rgba(184,103,58,.1);border:1px solid rgba(251,146,60,.2);border-radius:12px;font-size:.85rem;color:#c87848;font-weight:600">🗑 Всего вещей к удалению: ${toRemove.length}</div><div class="donate-list">`;
+  Object.values(bySec).forEach(({sec,items})=>{
+    html+=`<div class="donate-section-label">${sec?.icon||'📦'} ${sec?.name||'Без раздела'}</div>`;
+    items.forEach(item=>{
+      const cat=D.cats.find(c=>c.id===item.cId);
+      const colorDot=item.color?`<span class="donate-item-color" style="background:${item.color}"></span>`:'';
+      const meta=[cat?.name,item.brand].filter(Boolean).join(' · ');
+      const sn=(item.name||'').replace(/'/g,"\\'");
+      html+=`<div class="donate-item">
+        ${colorDot}
+        <div class="donate-item-info">
+          <div class="donate-item-name">${item.name}</div>
+          ${meta?`<div class="donate-item-meta">${meta}</div>`:''}
+        </div>
+        <div class="donate-item-actions">
+          <button class="donate-keep" onclick="keepItem('${item.id}')">✨</button>
+          <button class="card-btn del" onclick="askDelFromDonate('${item.id}','${sn}')">✕</button>
+        </div>
+      </div>`;
+    });
+  });
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+function keepItem(id){
+  const item=D.items.find(i=>i.id===id);
+  if(item){item.joy='yes';save();renderDonate();updateStats();}
+}
+function askDelFromDonate(id,name){
+  delId=id;
+  document.getElementById('del-text').textContent=`"${name}" — поблагодари эту вещь за службу.`;
+  window._afterDel='donate';
+  openOv('ov-del');
+}
+
+function confirmDel(){
+  if(delId){D.items=D.items.filter(i=>i.id!==delId);save();}
+  closeOv('ov-del');delId=null;
+  if(window._afterDel==='donate'){window._afterDel=null;renderDonate();updateStats();}
+  else renderItems();
+}
+
+
+
+renderHome();
+</script>
+
+<!-- РАЗБОР OVERLAY -->
+<div id="sort-overlay">
+  <div class="sort-topbar">
+    <div class="sort-topbar-inner">
+      <button class="sort-close" onclick="closeSortMode()">✕</button>
+      <div class="sort-progress-wrap">
+        <div class="sort-progress-label" id="sort-progress-label">0 / 0</div>
+        <div class="sort-progress-bar"><div class="sort-progress-fill" id="sort-progress-fill" style="width:0%"></div></div>
+      </div>
+      <div style="font-size:.8rem;font-weight:700;color:var(--tx3)" id="sort-cat-label"></div>
+    </div>
+  </div>
+  <div class="sort-card-area" id="sort-card-area">
+    <div class="sort-card" id="sort-card"></div>
+    <div class="sort-done" id="sort-done">
+      <span class="sort-done-emoji">🎉</span>
+      <h3>Разбор завершён!</h3>
+      <p id="sort-done-text"></p>
+    </div>
+  </div>
+  <div class="sort-actions" id="sort-actions">
+    <button class="sort-act-btn sa-no" onclick="sortDecide('no')">
+      <div class="sort-act-icon">🗑</div>
+      <span class="sort-act-label">Убрать</span>
+    </button>
+    <button class="sort-act-btn sa-maybe" onclick="sortDecide('maybe')">
+      <div class="sort-act-icon">🤔</div>
+      <span class="sort-act-label">Позже</span>
+    </button>
+    <button class="sort-act-btn sa-yes" onclick="sortDecide('yes')">
+      <div class="sort-act-icon">✨</div>
+      <span class="sort-act-label">Радость</span>
+    </button>
+  </div>
+</div>
+</body>
+</html>
